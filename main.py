@@ -1,6 +1,5 @@
 import websocket
 import threading
-import time
 
 ws = None
 ws_ready_event = threading.Event()
@@ -37,11 +36,10 @@ def send_messages():
         message = input("Enter q to quit!\nEnter a message to send: \n")
         if ws:
             try:
-                if message=="q":
+                if message == "q":
                     ws.close()
                     break
                 ws.send(message)
-                print(f"Sent: {message}")
             except websocket.WebSocketConnectionClosedException:
                 print("WebSocket connection is closed. Cannot send message.")
         else:
