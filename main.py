@@ -24,7 +24,7 @@ if __name__ == "__main__":
     gui = GUI(websocket_connection.ws)
 
     # helps sync messages between pygame and our websocket connection
-    websocket_connection.set_game_state_queue(gui.game_state_queue)
+    websocket_connection.set_game_state_queue(gui.game_data_queue)
 
     # new thread that spawns connection
     websocket_thread = threading.Thread(target=websocket_connection.start_forever)
