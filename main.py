@@ -1,3 +1,11 @@
+"""
+Entry Point
+
+This is the entry point to the Clue-less client.
+
+Author: Christopher Pohl
+Date: 2024-10-20
+"""
 import threading
 from WebsocketConnection import WebsocketConnection
 from GUI import GUI

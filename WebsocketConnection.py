@@ -31,7 +31,7 @@ class WebsocketConnection:
         self.ws.run_forever(ping_interval=30, ping_timeout=10)
 
     def __on_open(self, ws):
-        print("Opened connection")
+        print("### opened ###")
         self.ws_ready_event.set()
 
     def __on_error(self, ws, error):
