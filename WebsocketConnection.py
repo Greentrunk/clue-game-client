@@ -42,11 +42,9 @@ class WebsocketConnection:
         print(f"Closed connection with status code: {close_status_code}, message: {close_msg}")
 
     def __on_message(self, ws, message):
-        # log for debugging
-        print(message)
-
         # Push the message into the thread safe queue
         self.game_data_queue.put(message)
+        self.ws.send("Game Data Received.")
 
     # Private method to determine if user method from console or gui is valid to be sent to server
     def __validate_user_message(self, message):

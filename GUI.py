@@ -14,6 +14,8 @@ import queue
 class GUI:
     def __init__(self, ws, game_data_queue):
         pygame.init()
+        pygame.font.init()
+        self.font = pygame.font.SysFont('Comic Sans MS', 30)
         self.game_state = GameState.GameStart
         self.game_data_queue = game_data_queue
         self.ws = ws
@@ -37,17 +39,20 @@ class GUI:
                 if event.type == pygame.QUIT:
                     self.__quit()
                     self.is_running = False
+                    return
 
             # POLL FOR CURRENT GAME DATA IF MESSAGE
             try:
                 while not self.game_data_queue.empty():
                     curr_game_data = self.game_data_queue.get_nowait()
-                    print(f"Game data is {curr_game_data}")
+                    # print(f"Game data is {curr_game_data}")
             except queue.Empty:
                 pass
 
             # fill the screen with a color to wipe away anything from last frame
             self.screen.fill("black")
+
+
 
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
@@ -67,6 +72,9 @@ class GUI:
 
             self.screen.blit(self.game_board_img, self.game_board)
 
+            # DEBUG RENDER GAME STATE
+            text_surface = self.font.render(curr_game_data, True, (255, 255, 255))
+            self.screen.blit(text_surface, (0, 0))
             pygame.display.flip()
 
             self.clock.tick(60)  # limits FPS to 60
