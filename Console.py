@@ -1,43 +1,25 @@
 """
-GUI Module
+Console Module
 
-This module contains the GUI class
+This module contains the Console class
 
 Author: Christopher Pohl
-Date: 2024-10-20
+Date: 2024-10-21
 """
-import pygame
 from GameState import GameState
 import queue
 
 
-class GUI:
+class Console:
     def __init__(self, ws, game_data_queue):
-        pygame.init()
         self.game_state = GameState.GameStart
-        self.game_data_queue = game_data_queue
         self.ws = ws
-        self.screen = pygame.display.set_mode((1200, 720))
-        self.clock = pygame.time.Clock()
+        self.game_data_queue = game_data_queue
         self.is_running = True
-
-        self.game_board_img = pygame.image.load("assets/textures/clue_board.jpg")
-        self.game_board = self.game_board_img.get_rect()
-        self.game_board.center = self.screen.get_rect().center
-
-    def set_game_data_queue(self, queue):
-        self.game_data_queue = queue
 
     def run(self):
         curr_game_data = ""
         while self.is_running:
-            # poll for events
-            # pygame.QUIT event means the user clicked X to close your window
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.__quit()
-                    self.is_running = False
-
             # POLL FOR CURRENT GAME DATA IF MESSAGE
             try:
                 while not self.game_data_queue.empty():
@@ -46,16 +28,13 @@ class GUI:
             except queue.Empty:
                 pass
 
-            # fill the screen with a color to wipe away anything from last frame
-            self.screen.fill("black")
-
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 pass
             elif self.game_state == GameState.CharacterSelection:
                 pass
             elif self.game_state == GameState.GameBoard:
-                pass
+                self.__print_game_board()
             elif self.game_state == GameState.PlayerTurn:
                 pass
             elif self.game_state == GameState.PlayerWin:
@@ -65,12 +44,8 @@ class GUI:
             else:
                 print("ERROR: unknown game state")
 
-            self.screen.blit(self.game_board_img, self.game_board)
+    def __print_game_board(self):
+        pass
 
-            pygame.display.flip()
-
-            self.clock.tick(60)  # limits FPS to 60
-
-    def __quit(self):
-        pygame.quit()
-        self.ws.close()
+    def __wait_for_input(self, instruction):
+        message = input(instruction)

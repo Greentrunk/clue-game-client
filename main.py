@@ -1,33 +1,27 @@
 import threading
 from WebsocketConnection import WebsocketConnection
 from GUI import GUI
+from enum import Enum
+from Console import Console
 
-# This will allow us to send messages free without blocking back to server
-# def send_messages():
-#     ws_ready_event.wait()  # Wait until WebSocket is open
-#     while True:
-#         message = input("Enter q to quit!\nEnter a message to send: \n")
-#         if ws:
-#             try:
-#                 if message == "q":
-#                     ws.close()
-#                     break
-#                 ws.send(message)
-#             except websocket.WebSocketConnectionClosedException:
-#                 print("WebSocket connection is closed. Cannot send message.")
-#         else:
-#             print("WebSocket is not connected")
 
+class ClientType(Enum):
+    Console = 0
+    Pygame = 1
+
+
+client_type = ClientType.Pygame
 
 if __name__ == "__main__":
     websocket_connection = WebsocketConnection()
-    gui = GUI(websocket_connection.ws)
-
-    # helps sync messages between pygame and our websocket connection
-    websocket_connection.set_game_state_queue(gui.game_data_queue)
 
     # new thread that spawns connection
     websocket_thread = threading.Thread(target=websocket_connection.start_forever)
     websocket_thread.start()
 
-    gui.run()
+    if client_type == ClientType.Console:
+        console = Console(websocket_connection.ws, websocket_connection.game_data_queue)
+        console.run()
+    else:
+        gui = GUI(websocket_connection.ws, websocket_connection.game_data_queue)
+        gui.run()
