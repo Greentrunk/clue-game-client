@@ -1,0 +1,96 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class main {
+    websocket_connection: WebsocketConnection
+    set_websocket(websocket: Websocket)
+    json_serialize(): String
+    async send_gamestate_to_client()
+    next_phase()
+    next_player()
+    run()
+}
+
+enum ClientType {
+    Console = 0
+    Pygame = 1
+}
+
+main -- "0..*" GameScreens
+main "1" -- "0..*" ClientType
+main "1" -- "0..*" GameState
+main "1" -- "0..*" WebsocketConnection
+main "1" -- "0..*" Console
+Console "1" --> "0" GameState
+Console "1" --> "0" GameScreens
+
+class GameState {
+    <<get/set>> name: string
+    <<get/set>> position: Point
+    notes: string
+    is_active: bool
+    void add_cards(cards: List<Card>)
+    void add_note(note: string)
+    get_cards() : List<Card>
+    _get_cards_string() : List<string>
+    dict() : dict
+}
+
+class Console {
+   game_state: GameState = GameStart
+   game_data_queue
+   ws
+   is_running: Boolean
+   set_game_data_queue(): game_data_queue
+}
+
+class GUI implements Console {
+    font
+    screen
+    clock
+    run()
+    quit()
+}
+
+class CLI implements Console {
+    start_screen String
+}
+
+class Console {
+    add_claim(claim: Claim)
+    array_of_claim_dicts(): List<dict>
+}
+
+class WebsocketConnection {
+    game_data_queue
+    ws_ready_event
+    websocket: Websocket
+    host_url
+    start_forever()
+    on_open(websocket: Websocket)
+    on_error(websocket: Websocket)
+    on_close(websocket: Websocket, close_status_code, close_msg)
+    on_message(websocket: Websocket)
+    on_reconnect(websocket: Websocket)
+    validate_user_message(message: String): boolean
+    send_message(message: String)
+}
+
+class ClueMap {
+    <<get>> weapon_map: dict<Weapon, Room>
+    <<get>> player_map: List<List<None | Player>>
+    move_weapon(weapon, new_room)
+}
+
+enum GameScreens {
+    <<START = "Start Screen">>
+    <<CHARACTERSELECTION = "Character Selection Screen">>
+    <<DEALCARDS = "Deal Cards Screen">>
+    <<GAMEBOARD = "Gameboard Screen">>
+    <<PLAYERTURN = "Player Turn Screen">>
+    <<PLAYERWIN = "Player Win Screen">>
+    <<PLAYERLOSS = "Player Loss Screen">>
+    <<GAMEOVER = "Game Over Screen">>
+}
+
+@enduml
