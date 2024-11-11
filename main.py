@@ -8,11 +8,11 @@ Date: 2024-10-20
 """
 import threading
 from WebsocketConnection import WebsocketConnection
-from GUI import GUI
+from Pygame import Pygame
 from enum import Enum
 import sys
 
-
+#this enum is used in the run configuration to use either the console (command line interface) or pygame  (graphical user interface)
 class ClientType(Enum):
      Console = 0
      Pygame = 1
@@ -20,6 +20,8 @@ class ClientType(Enum):
 client_type = ClientType.Pygame
 
 def main():
+
+    #used to extract the enum from the run configuration
     if len(sys.argv) < 2:
         print("Usage: python script_name.py <parameter>")
         sys.exit(1)
@@ -31,7 +33,7 @@ def main():
     elif parameter == 0:
         client_type = ClientType.Console
 
-    # Do something with the parameter
+    # Print out for debugging
     print("\n\n\nParameter:", parameter)
     print("\n\n\nClientType:", client_type)
 
@@ -47,5 +49,5 @@ if __name__ == "__main__":
         console = Console(websocket_connection.ws, websocket_connection.game_data_queue)
         console.run()
     else:
-        gui = GUI(websocket_connection.ws, websocket_connection.game_data_queue)
-        gui.run()
+        pygame = Pygame(websocket_connection.ws, websocket_connection.game_data_queue)
+        pygame.run()

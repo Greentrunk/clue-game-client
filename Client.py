@@ -17,7 +17,8 @@ def run(self):
             pass
 
         # RENDER/LOGIC HERE BASED ON GAME STATE
-        if self.game_state == GameState.GameStart:
+        if self.game_state == GameState.GameStart.value:
+
             pass
         elif self.game_state == GameState.CharacterSelection:
             pass
