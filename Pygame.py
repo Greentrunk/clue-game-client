@@ -1,17 +1,17 @@
 """
-GUI Module
+Pygame Module
 
-This module contains the GUI class
+This module contains the Pygame class
 
-Author: Christopher Pohl
-Date: 2024-10-20
+Author: John Fiorini
+Date: 2024-11-10
 """
 import pygame
 from GameState import GameState
 import queue
 
 
-class GUI:
+class Pygame:
     def __init__(self, ws, game_data_queue):
         pygame.init()
         pygame.font.init()
@@ -23,7 +23,7 @@ class GUI:
         self.clock = pygame.time.Clock()
         self.is_running = True
 
-        self.game_board_img = pygame.image.load("assets/textures/gameboard.png")
+        self.game_board_img = pygame.image.load("assets/textures/clue_board.jpg")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
 
@@ -52,17 +52,8 @@ class GUI:
             # fill the screen with a color to wipe away anything from last frame
             self.screen.fill("black")
 
-
-            self.game_state = curr_game_data
-            print("Curr game data:", curr_game_data)
-
-            print("Game data:", self.game_state)
-
-            print("Game data:", GameState.GameStart)
-
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
-                print("____________________GAME START_______________")
                 pass
             elif self.game_state == GameState.CharacterSelection:
                 pass
@@ -80,7 +71,7 @@ class GUI:
             self.screen.blit(self.game_board_img, self.game_board)
 
             # DEBUG RENDER GAME STATE
-            text_surface = self.font.render(curr_game_data, True, (0, 255, 255))
+            text_surface = self.font.render(curr_game_data, True, (255, 255, 255))
             self.screen.blit(text_surface, (0, 0))
             pygame.display.flip()
 

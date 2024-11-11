@@ -11,9 +11,9 @@ from enum import Enum
 
 
 class GameState(Enum):
-    GameStart = 1
-    CharacterSelection = 2
-    GameBoard = 3
-    PlayerTurn = 4
-    PlayerWin = 5
-    PlayerLoss = 6
+    GameStart = "Game Start"
+    CharacterSelection = "Character Selection"
+    GameBoard = "Game Board"
+    PlayerTurn = "Player Turn"
+    PlayerWin = "Player Win"
+    PlayerLoss = "Player Loss"

@@ -1,14 +1,13 @@
 @startuml
 'https://plantuml.com/class-diagram
 
-class main {
+class Client {
     websocket_connection: WebsocketConnection
     set_websocket(websocket: Websocket)
     json_serialize(): String
     async send_gamestate_to_client()
     next_phase()
     next_player()
-    run()
 }
 
 enum ClientType {
@@ -16,15 +15,21 @@ enum ClientType {
     Pygame = 1
 }
 
-main -- "0..*" GameScreens
-main "1" -- "0..*" ClientType
-main "1" -- "0..*" GameState
-main "1" -- "0..*" WebsocketConnection
-main "1" -- "0..*" Console
-Console "1" --> "0" GameState
-Console "1" --> "0" GameScreens
+Client -- "0..*" GameScreens
+Client "1" -- "0..*" ClientType
+Client "1" -- "0..*" GameStateMessage
+Client "1" -- "0..*" WebsocketConnection
+Client "1" -- "0..*" UserInterface
+UserInterface "1" --> "0" GameStateMessage
+UserInterface "1" --> "0" Gameboard
+UserInterface "1" --> "0" GameScreens
+Console "1" --> "0" gameboardSquare
 
-class GameState {
+class main{
+    main()
+}
+
+class GameStateMessage {
     <<get/set>> name: string
     <<get/set>> position: Point
     notes: string
@@ -36,29 +41,53 @@ class GameState {
     dict() : dict
 }
 
-class Console {
-   game_state: GameState = GameStart
-   game_data_queue
-   ws
-   is_running: Boolean
-   set_game_data_queue(): game_data_queue
-}
 
-class GUI implements Console {
+class Pygame implements UserInterface {
     font
-    screen
+    start_screen: Pygame_screen
     clock
+    draw()
     run()
     quit()
 }
 
-class CLI implements Console {
-    start_screen String
+class Console implements UserInterface {
+    draw()
 }
 
-class Console {
-    add_claim(claim: Claim)
-    array_of_claim_dicts(): List<dict>
+class gameboardSquare {
+    String name
+    int rowCoordinate
+    int colCoordinate
+    gameboardSquare[] connections
+    player[] playersInside
+    weapon[] weaponsInside
+    String asset Render
+}
+
+class Gameboard {
+    start_screen String
+    <<get>> weapon_map: dict<Weapon, Room>
+    <<get>> player_map: List<List<None | Player>>
+    move_weapon(weapon, new_room)
+}
+
+
+abstract class UserInterface {
+   game_screen: GameScreens = START
+   game_data_queue
+   gameboard: Gameboard
+   message: GameStateMessage
+   screen: GameScreens
+   ws
+   is_running: Boolean
+   set_game_data_queue(): game_data_queue
+   {abstract}draw(screen, message, gameboard)
+   update_gameboard(gameboard, message)
+   player_name: String
+   is_administrator: Boolean
+   add_claim(claim: Claim)
+   array_of_claim_dicts(): List<dict>
 }
 
 class WebsocketConnection {
@@ -74,12 +103,6 @@ class WebsocketConnection {
     on_reconnect(websocket: Websocket)
     validate_user_message(message: String): boolean
     send_message(message: String)
-}
-
-class ClueMap {
-    <<get>> weapon_map: dict<Weapon, Room>
-    <<get>> player_map: List<List<None | Player>>
-    move_weapon(weapon, new_room)
 }
 
 enum GameScreens {
