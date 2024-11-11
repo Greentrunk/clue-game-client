@@ -7,11 +7,16 @@ Author: John Fiorini
 Date: 2024-11-10
 """
 import pygame
-from pygame.examples.go_over_there import screen
+from pygame.examples.go_over_there import screen, CIRCLE_RADIUS
 
 from GameState import GameState
+from Gameboard import spawnLocations, charColors
+from Gameboard import Grid
+
 import queue
 
+
+CIRCLE_R = 15
 
 class Pygame:
 
@@ -22,14 +27,23 @@ class Pygame:
         self.game_state = GameState.GameStart
         self.game_data_queue = game_data_queue
         self.ws = ws
-        self.screen = pygame.display.set_mode((1200, 720))
+        self.screen = pygame.display.set_mode((1245, 688))
         self.clock = pygame.time.Clock()
         self.is_running = True
 
     def setupGameboard(self):
-        self.game_board_img = pygame.image.load("assets/textures/gameboard.png")
+        self.game_board_img = pygame.image.load("assets/textures/Map.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
+
+
+
+    def testGrid(selfself):
+        # Create a Grid object
+        grid = Grid(7, 7, 95, screen)
+        grid.draw_circles()
+        grid.draw_grid_lines()
+
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -38,28 +52,28 @@ class Pygame:
         self.screen.blit(self.game_board_img, self.game_board)
 
         # Miss scarlet
-        pygame.draw.circle(self.screen, (255, 0, 0),
-                           [680, 90], 25, 0)
+        pygame.draw.circle(self.screen, charColors.SCARLET.value,
+                           spawnLocations.spawnScarlet.value, CIRCLE_R, 0)
 
         # Col. Mustard
-        pygame.draw.circle(self.screen, (255, 255, 30),
-                           [900, 270], 25, 0)
+        pygame.draw.circle(self.screen,  charColors.MUSTARD.value,
+                           spawnLocations.spawnMustard.value, CIRCLE_R, 0)
 
         # Professor Plum
-        pygame.draw.circle(self.screen, (255, 0, 255),
-                           [300, 270], 25, 0)
+        pygame.draw.circle(self.screen, charColors.PLUM.value,
+                           spawnLocations.spawnPlum.value, CIRCLE_R, 0)
 
         # Miss Peacock
-        pygame.draw.circle(self.screen, (0, 0, 255),
-                           [300, 450], 25, 0)
+        pygame.draw.circle(self.screen, charColors.PEACOCK.value,
+                           spawnLocations.spawnPeacock.value, CIRCLE_R, 0)
 
         # Mr Green
-        pygame.draw.circle(self.screen, (0, 255, 0),
-                           [500, 625], 25, 0)
+        pygame.draw.circle(self.screen, charColors.GREEN.value,
+                           spawnLocations.spawnGreen.value, CIRCLE_R, 0)
 
         # Miss White
-        pygame.draw.circle(self.screen, (230, 230, 200),
-                           [685, 630], 25, 0)
+        pygame.draw.circle(self.screen, charColors.WHITE.value,
+                           spawnLocations.spawnWhite.value, CIRCLE_R, 0)
 
 
         pygame.display.update()
@@ -93,29 +107,24 @@ class Pygame:
             #self.screen.fill("black")
 
             self.game_state = curr_game_data
-            print("Curr game data:", curr_game_data)
-
-            print("Game data:", self.game_state)
-
-            print("Game data:", GameState.GameStart.value)
 
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart.value:
-                print("____________________GAME START_______________")
+                pass
+            elif self.game_state == GameState.CharacterSelection.value:
+                pass
+            elif self.game_state == GameState.GameBoard.value:
                 self.setupGameboard()
+                # self.testGrid()
                 self.placeCharacters()
+                pass
+            elif self.game_state == GameState.PlayerTurn.value:
+
 
                 pass
-            elif self.game_state == GameState.CharacterSelection:
-                self.placeCharacters()
+            elif self.game_state == GameState.PlayerWin.value:
                 pass
-            elif self.game_state == GameState.GameBoard:
-                pass
-            elif self.game_state == GameState.PlayerTurn:
-                pass
-            elif self.game_state == GameState.PlayerWin:
-                pass
-            elif self.game_state == GameState.PlayerLoss:
+            elif self.game_state == GameState.PlayerLoss.value:
                 pass
             else:
                 print("ERROR: unknown game state")
@@ -131,3 +140,4 @@ class Pygame:
     def __quit(self):
         pygame.quit()
         self.ws.close()
+
