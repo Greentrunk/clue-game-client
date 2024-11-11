@@ -36,13 +36,12 @@ class Pygame:
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
 
-
-
     def testGrid(selfself):
         # Create a Grid object
         grid = Grid(7, 7, 95, screen)
         grid.draw_circles()
         grid.draw_grid_lines()
+
 
 
     def placeCharacters(self):
@@ -54,23 +53,18 @@ class Pygame:
         # Miss scarlet
         pygame.draw.circle(self.screen, charColors.SCARLET.value,
                            spawnLocations.spawnScarlet.value, CIRCLE_R, 0)
-
         # Col. Mustard
         pygame.draw.circle(self.screen,  charColors.MUSTARD.value,
                            spawnLocations.spawnMustard.value, CIRCLE_R, 0)
-
         # Professor Plum
         pygame.draw.circle(self.screen, charColors.PLUM.value,
                            spawnLocations.spawnPlum.value, CIRCLE_R, 0)
-
         # Miss Peacock
         pygame.draw.circle(self.screen, charColors.PEACOCK.value,
                            spawnLocations.spawnPeacock.value, CIRCLE_R, 0)
-
         # Mr Green
         pygame.draw.circle(self.screen, charColors.GREEN.value,
                            spawnLocations.spawnGreen.value, CIRCLE_R, 0)
-
         # Miss White
         pygame.draw.circle(self.screen, charColors.WHITE.value,
                            spawnLocations.spawnWhite.value, CIRCLE_R, 0)
@@ -108,15 +102,18 @@ class Pygame:
 
             self.game_state = curr_game_data
 
+
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart.value:
                 pass
             elif self.game_state == GameState.CharacterSelection.value:
+
                 pass
             elif self.game_state == GameState.GameBoard.value:
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
+
                 pass
             elif self.game_state == GameState.PlayerTurn.value:
 
