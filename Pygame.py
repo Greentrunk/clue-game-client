@@ -98,6 +98,8 @@ class Pygame:
             # self.screen.fill("black")
 
             self.game_data = curr_game_data
+
+            # Check who's turn
             if self.game_data["player_turn"] == self.player_name:
                 self.game_state = GameState.PlayerTurn
 

@@ -6,6 +6,8 @@ This module contains the WebsocketConnection class (Console Manager)
 Author: Christopher Pohl
 Date: 2024-10-20
 """
+import json
+
 import websocket
 import threading
 import queue
@@ -44,7 +46,7 @@ class WebsocketConnection:
     def __on_message(self, ws, message):
         # Push the message into the thread safe queue
         print(message)
-        self.game_data_queue.put(message)
+        self.game_data_queue.put(json.loads(message))
 
     # Private method to determine if user method from console or gui is valid to be sent to server
     def __validate_user_message(self, message):
