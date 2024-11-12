@@ -9,13 +9,14 @@ Date: 2024-11-10
 import pygame
 
 from GameState import GameState
-from Gameboard import spawnLocations, charColors
+from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale
 from Gameboard import Grid
 
 import json
 import queue
 
 CIRCLE_R = 15
+BLACK = (0, 0, 0)
 
 
 class Pygame:
@@ -71,6 +72,28 @@ class Pygame:
 
         pygame.display.update()
 
+
+    def updateGameboard(self):
+        # Using draw.rect module of
+        # pygame to draw the solid circle
+
+        # self.screen.blit(self.game_board_img, self.game_board)
+
+        for player in self.game_data["players"]:
+            x = player["position"]["x"]
+            y = player["position"]["y"]
+            # char =
+            if player["character"] == "Colonel Mustard":
+                pygame.draw.circle(self.screen, charColors.MUSTARD.value,
+                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+            elif player["character"] == "Miss Scarlet":
+                pygame.draw.circle(self.screen, charColors.SCARLET.value,
+                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+            elif player["character"] == "Professor Plum":
+                pygame.draw.circle(self.screen, charColors.SCARLET.value,
+                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+        pygame.display.update()
+
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
 
@@ -114,12 +137,22 @@ class Pygame:
                 message = {"message_type": "player_join", "player_name": player_name}
                 self.ws.send(json.dumps(message))
                 self.player_name = player_name
-                self.game_state = GameState.GameBoard
+                self.game_state = GameState.LobbyWaiting
 
-            elif self.game_state == GameState.GameBoard:
+            elif self.game_state == GameState.LobbyWaiting:
+
+                print("IN LOBBY WAITING, PLAYER COUNT: ", len(self.game_data["players"]))
+                if(len(self.game_data["players"]) == 3):
+                    self.game_state = GameState.GameBoardInit
+
+
+            elif self.game_state == GameState.GameBoardInit:
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
+
+            elif self.game_state == GameState.GameBoard:
+                self.updateGameboard()
 
                 pass
             elif self.game_state == GameState.PlayerTurn:
@@ -129,12 +162,13 @@ class Pygame:
                     if move_type == "move":
                         x = input("Enter x coordinate: \n")
                         y = input("Enter y coordinate: \n")
-                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y}
+                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y, "player_name": self.player_name}
                         break
                     elif move_type == "accuse":
-                        message = {"message_type": "skip_to_accuse"}
+                        message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
                         break
                     elif move_type == 'claim':
+                        message = {"player_name": self.player_name}
                         message["message_type"] = "make_claim"
                         message["character"] = input("Enter character name to claim: \n")
                         message["weapon"] = input("Enter with what weapon: \n")
@@ -144,6 +178,9 @@ class Pygame:
                         print("Invalid move!")
 
                 self.ws.send(json.dumps(message))
+                print("MOVING TO GAME STATE")
+                self.updateGameboard()
+                self.game_state = GameState.GameBoard
 
             elif self.game_state == GameState.PlayerWin:
                 pass
@@ -153,8 +190,8 @@ class Pygame:
                 print("ERROR: unknown game state")
 
             # DEBUG RENDER GAME STATE
-            # text_surface = self.font.render(curr_game_data, True, (0, 255, 255))
-            # self.screen.blit(text_surface, (0, 0))
+            text_surface = self.font.render(self.player_name, True, BLACK)
+            self.screen.blit(text_surface, (12, 5))
             pygame.display.flip()
 
             self.clock.tick(60)  # limits FPS to 60

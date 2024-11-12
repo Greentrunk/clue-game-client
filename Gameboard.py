@@ -40,6 +40,8 @@ class Grid:
             pygame.draw.line(self.screen, BLACK, (col * self.square_size, 0), (col * self.square_size, self.rows * self.square_size))
 
 
+
+
 class customGrid (Enum):
     x0 = 420
     x1 = 515
@@ -49,7 +51,7 @@ class customGrid (Enum):
     x5 = 850
     x6 = 950
 
-    x = [x0, x1, x2, x3, x4, x5, x6]
+    xScale = [x0, x1, x2, x3, x4, x5, x6]
 
     y0 = 95
     y1 = 180
@@ -59,8 +61,10 @@ class customGrid (Enum):
     y5 = 510
     y6 = 595
 
-    y = [y0, y1, y2, y3, y4, y5, y6]
+    yScale = [y0, y1, y2, y3, y4, y5, y6]
 
+xScale = [customGrid.x0, customGrid.x1, customGrid.x2, customGrid.x3, customGrid.x4, customGrid.x5, customGrid.x6]
+yScale = [customGrid.y0, customGrid.y1, customGrid.y2, customGrid.y3, customGrid.y4, customGrid.y5, customGrid.y6]
     #
     # xMapStart = 420
     # xincrement = 175
@@ -85,12 +89,12 @@ class customGrid (Enum):
     # y6 = y0 + 6*yincrement
 
 class spawnLocations(Enum):
-    spawnScarlet = [customGrid.x4.value, customGrid.y3.value]
-    spawnMustard = [customGrid.x1.value, customGrid.y4.value]
-    spawnPlum = [customGrid.x1.value, customGrid.y1.value]
-    spawnPeacock = [customGrid.x3.value, customGrid.y5.value]
-    spawnGreen = [customGrid.x4.value, customGrid.y1.value]
-    spawnWhite = [customGrid.x5.value, customGrid.y5.value]
+    spawnScarlet = [customGrid.x4.value, customGrid.y0.value]
+    spawnMustard = [customGrid.x6.value, customGrid.y2.value]
+    spawnPlum = [customGrid.x0.value, customGrid.y2.value]
+    spawnPeacock = [customGrid.x0.value, customGrid.y4.value]
+    spawnGreen = [customGrid.x2.value, customGrid.y6.value]
+    spawnWhite = [customGrid.x4.value, customGrid.y6.value]
 
 class roomLocations(Enum):
     STUDY = [customGrid.x1.value, customGrid.y1.value]

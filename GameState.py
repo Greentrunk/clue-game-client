@@ -13,6 +13,8 @@ from enum import Enum
 class GameState(Enum):
     GameStart = "Game Start"
     CharacterSelection = "Character Selection"
+    LobbyWaiting = "Lobby Waiting"
+    GameBoardInit = "Game Board Init"
     GameBoard = "Game Board"
     PlayerTurn = "Player Turn"
     PlayerWin = "Player Win"
