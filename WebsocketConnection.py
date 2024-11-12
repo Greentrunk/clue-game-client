@@ -43,8 +43,8 @@ class WebsocketConnection:
 
     def __on_message(self, ws, message):
         # Push the message into the thread safe queue
+        print(message)
         self.game_data_queue.put(message)
-        self.ws.send("Game Data Received.")
 
     # Private method to determine if user method from console or gui is valid to be sent to server
     def __validate_user_message(self, message):

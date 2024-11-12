@@ -9,7 +9,6 @@ Date: 2024-10-21
 
 from enum import Enum
 import pygame
-from pygame.examples.go_over_there import CIRCLE_RADIUS
 
 # Colors
 WHITE = (255, 255, 255)

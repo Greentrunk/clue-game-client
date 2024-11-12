@@ -12,16 +12,19 @@ from Pygame import Pygame
 from enum import Enum
 import sys
 
-#this enum is used in the run configuration to use either the console (command line interface) or pygame  (graphical user interface)
+
+# this enum is used in the run configuration to use either the console (command line interface) or pygame  (graphical user interface)
 class ClientType(Enum):
-     Console = 0
-     Pygame = 1
+    Console = 0
+    Pygame = 1
+
 
 client_type = ClientType.Pygame
 
-def main():
 
-    #used to extract the enum from the run configuration
+def main():
+    # used to extract the enum from the run configuration
+    global client_type
     if len(sys.argv) < 2:
         print("Usage: python script_name.py <parameter>")
         sys.exit(1)
