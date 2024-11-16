@@ -6,6 +6,8 @@ This module contains the Pygame class
 Author: John Fiorini & Christopher Pohl
 Date: 2024-11-10
 """
+from xml.etree.ElementTree import tostring
+
 import pygame
 import thorpy as tp
 
@@ -37,12 +39,26 @@ class Pygame:
         self.is_running = True
         self.player_name = ""
 
+
+        self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
+        self.start_screen = self.start_screen_img.get_rect()
+        self.start_screen.center = self.screen.get_rect().center
+
+        self.lobby_screen_img = pygame.image.load("assets/textures/Lobby.png")
+        self.lobby_screen = self.lobby_screen_img.get_rect()
+        self.lobby_screen.center = self.screen.get_rect().center
+
+        self.game_board_img = pygame.image.load("assets/textures/Map.png")
+        self.game_board = self.game_board_img.get_rect()
+        self.game_board.center = self.screen.get_rect().center
+
         
-        
+        # User Interface object initialization
         tp.init(self.screen, tp.themes.theme_game1)
 
-        # Character Selection
-        character_selection = []
+
+        # Player Name input UI object
+        player_name_input = []
         self.enter_player_name = tp.TextInput("", placeholder="Enter Player Name")
         self.confirm_player_name = tp.Button("Confirm")
 
@@ -52,13 +68,17 @@ class Pygame:
             self.ws.send(json.dumps(message))
             self.player_name = player_name
             self.game_state = GameState.LobbyWaiting
+
+            #This needs to change everytime we change states
             self.ui_current_updater = self.ui_lobby_waiting_updater
 
         self.confirm_player_name.at_unclick = player_name_unclick
-        character_selection.append(self.enter_player_name)
-        character_selection.append(self.confirm_player_name)
-        self.ui_character_selection = tp.Group(character_selection)
-        self.ui_character_selection_updater = self.ui_character_selection.get_updater()
+        player_name_input.append(self.enter_player_name)
+        player_name_input.append(self.confirm_player_name)
+
+        # appending UI group from player_name_input array
+        self.ui_player_name_input = tp.Group(player_name_input)
+        self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
 
         # Lobby Waiting
         lobby_waiting = []
@@ -66,14 +86,10 @@ class Pygame:
         self.ui_lobby_waiting = tp.Group(lobby_waiting)
         self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
-        self.ui_current_updater = self.ui_character_selection_updater
+        self.ui_current_updater = self.ui_player_name_input_updater
 
 
     def drawGameStart(self):
-        self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
-        self.start_screen = self.start_screen_img.get_rect()
-        self.start_screen.center = self.screen.get_rect().center
-
         self.screen.blit(self.start_screen_img, self.start_screen)
 
         welcome_message = self.font.render("Welcome to Blues Clue-less", True, WHITE)
@@ -85,14 +101,9 @@ class Pygame:
         # DEBUG RENDER GAME STATE
         player_name = self.font.render(self.player_name, True, BLACK)
         self.screen.blit(player_name, (12, 5))
-        pygame.display.flip()
 
-        pygame.display.update()
 
     def drawLobby(self):
-        self.lobby_screen_img = pygame.image.load("assets/textures/Lobby.png")
-        self.lobby_screen = self.lobby_screen_img.get_rect()
-        self.lobby_screen.center = self.screen.get_rect().center
 
         self.screen.blit(self.lobby_screen_img, self.lobby_screen)
 
@@ -105,23 +116,21 @@ class Pygame:
         # DEBUG RENDER GAME STATE
         player_name = self.font.render(self.player_name, True, WHITE)
         self.screen.blit(player_name, ((SCREEN_WIDTH/2) +50, 120))
-        pygame.display.flip()
 
-        pygame.display.update()
+        welcome_message = self.font.render("IN LOBBY WAITING, PLAYER COUNT: ", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2 - 400), 575))
+
+        player_count = str(len(self.game_data["players"]))
+        player_count_temp = self.font.render(player_count, True, WHITE)
+        self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2   + 300), 575))
+
 
     def setupGameboard(self):
-        self.game_board_img = pygame.image.load("assets/textures/Map.png")
-        self.game_board = self.game_board_img.get_rect()
-        self.game_board.center = self.screen.get_rect().center
         self.screen.blit(self.game_board_img, self.game_board)
-
 
         # DEBUG RENDER GAME STATE
         player_name = self.font.render(self.player_name, True, BLACK)
         self.screen.blit(player_name, (15, 5))
-        # pygame.display.flip()
-
-        pygame.display.update()
 
     def testGrid(self):
         # Create a Grid object
@@ -217,6 +226,7 @@ class Pygame:
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 self.drawGameStart()
+                self.ui_current_updater.update(events=events)
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
@@ -224,7 +234,6 @@ class Pygame:
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                print("IN LOBBY WAITING, PLAYER COUNT: ", len(self.game_data["players"]))
                 if len(self.game_data["players"]) == 3:
                     self.game_state = GameState.GameBoardInit
 
@@ -279,7 +288,7 @@ class Pygame:
             else:
                 print("ERROR: unknown game state")
 
-            self.ui_current_updater.update(events=events)
+            # self.ui_current_updater.update(events=events)
             pygame.display.flip()
             self.clock.tick(60)  # limits FPS to 60
 
