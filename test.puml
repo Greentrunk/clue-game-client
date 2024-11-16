@@ -1,27 +1,162 @@
 @startuml
 'https://plantuml.com/class-diagram
 
-abstract class AbstractList
-abstract AbstractCollection
-interface List
-interface Collection
-
-List <|-- AbstractList
-Collection <|-- AbstractCollection
-
-Collection <|- List
-AbstractCollection <|- AbstractList
-AbstractList <|-- ArrayList
-
-class ArrayList {
-Object[] elementData
-size()
+class GameManager {
+    index: Int
+    websocket: Websocket
+    set_websocket(websocket: Websocket)
+    json_serialize(): String
+    async send_gamestate_to_client()
+    next_phase()
+    next_player()
 }
 
-enum TimeUnit {
-DAYS
-HOURS
-MINUTES
+GameManager "1" o--> "0..*" Player
+GameManager "1" o--> "*" Weapon
+GameManager "1" --> "*" WeaponName: refers to collection of
+GameManager "1" *--> "1" ClaimsLog
+GameManager "1" *--> "1" ClueMap
+
+note "Point is an alias for (Int, Int)" as n
+note "<<get/set>> indicates the presence of a getter/setter class for a specific variable" as n2
+note "Global variable gameManager: GameManager" as g
+
+GameManager -[dashed]- g: instance of
+
+class Player {
+    <<get/set>> name: string
+    <<get/set>> position: Point
+    notes: string
+    is_active: bool
+    void add_cards(cards: List<Card>)
+    void add_note(note: string)
+    get_cards() : List<Card>
+    _get_cards_string() : List<string>
+    dict() : dict
 }
 
+Player "1" o--> "1" ClueCharacter
+Player "1" o--> "*" Card
+Player "1" *--> "1" PlayerTurnManager
+
+enum ClueCharacter {
+    <<MRS_WHITE = "Mrs. White">>
+    <<MRS_PEACOCK = "Mrs. Peacock">>
+    <<PROFESSOR_PLUM = "Professor Plum">>
+    <<COLONEL_MUSTARD = "Colonel Mustard">>
+    <<MISS_SCARLETT = "Miss Scarlett">>
+    <<REVEREND_GREEN = "Reverend Green">>
+    {static} get_default_position(): Point
+}
+
+class Weapon {
+    get_name(): String
+    get_name_enum(): WeaponName
+    get_room(): Room
+    set_room(room: Room)
+    dict(): dict
+    {static} generate_unassinged_weapons(): List<Weapon>
+}
+
+Weapon "1" o--> "1" WeaponName
+Weapon "1" o--> "0..1" Room
+
+enum WeaponName {
+    <<CANDLESTICK = "Candlestick">>
+    <<DAGGER = "Dagger">>
+    <<LEAD_PIPE = "Lead Pipe">>
+    <<REVOLVER = "Revolver">>
+    <<ROPE = "Rope">>
+    <<WRENCH = "Wrench">>
+}
+
+class ClaimsLog {
+    add_claim(claim: Claim)
+    array_of_claim_dicts(): List<dict>
+}
+
+ClaimsLog "1" *--> "*" Claim
+
+abstract class Claim {
+    {abstract} make_string(): string
+    {abstract} dict(): dict
+}
+
+Claim "1" o--> "1" ClueCharacter
+Claim "1" o--> "1" Weapon
+Claim "1" o--> "1" Room
+Claim "1" o--> "1" Player
+
+class Suggestion extends Claim {
+    make_string(): string
+    dict(): dict
+}
+class Accuse extends Claim {
+    make_string(): string
+    dict(): dict
+}
+
+interface Card {
+    {abstract} dict(): dict
+    {abstract} get_subject(): Any
+}
+
+class CharacterCard implements Card {
+    dict(): dict
+    get_subject(): ClueCharacter
+}
+class WeaponCard implements Card {
+    dict(): dict
+    get_subject(): Weapon
+}
+class RoomCard implements Card {
+    dict(): dict
+    get_subject(): Room
+}
+
+CharacterCard "1" o--> "1" ClueCharacter
+RoomCard "1" o--> "1" Room
+WeaponCard "1" o--> "1" Weapon
+
+class ClueMap {
+    <<get>> weapon_map: dict<Weapon, Room>
+    <<get>> player_map: List<List<None | Player>>
+    move_weapon(weapon, new_room)
+}
+
+ClueMap "1" o--> "*" Weapon
+ClueMap "1" o--> "*" Player
+ClueMap "1" --> "*" Room: refers to collection of
+ClueMap --> g: accesses
+
+enum Room {
+    <<STUDY = "Study">>
+    <<HALL = "Hall">>
+    <<LOUNGE = "Lounge">>
+    <<LIBRARY = "Library">>
+    <<BILLIARD = "Billiard Room">>
+    <<DINING = "Dining Room">>
+    <<CONSERVATORY = "Conservatory">>
+    <<BALLROOM = "Ballroom">>
+    <<KITCHEN = "Kitchen">>
+    get_coordinates() : Point
+    {static} get_room(coordinates: Point): Room
+}
+
+class PlayerTurnManager {
+    get_current_phase()
+    start_turn()
+    next_phase()
+    skip_to_accuse()
+}
+
+PlayerTurnManager "1" *--> "1" TurnPhase
+
+enum TurnPhase {
+    <<START = 0>>
+    <<MOVE = 1>>
+    <<SUGGEST = 2>>
+    <<REFUTE = 3>>
+    <<ACCUSE = 4>>
+}
 @enduml
