@@ -7,6 +7,7 @@ Author: John Fiorini & Christopher Pohl
 Date: 2024-11-10
 """
 import pygame
+import thorpy as tp
 
 from GameState import GameState
 from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale
@@ -33,6 +34,35 @@ class Pygame:
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.player_name = ""
+
+        tp.init(self.screen, tp.themes.theme_game1)
+
+        # Character Selection
+        character_selection = []
+        self.enter_player_name = tp.TextInput("", placeholder="Enter Player Name")
+        self.confirm_player_name = tp.Button("Confirm")
+
+        def player_name_unclick():
+            player_name = self.enter_player_name.value
+            message = {"message_type": "player_join", "player_name": player_name}
+            self.ws.send(json.dumps(message))
+            self.player_name = player_name
+            self.game_state = GameState.LobbyWaiting
+            self.ui_current_updater = self.ui_lobby_waiting_updater
+
+        self.confirm_player_name.at_unclick = player_name_unclick
+        character_selection.append(self.enter_player_name)
+        character_selection.append(self.confirm_player_name)
+        self.ui_character_selection = tp.Group(character_selection)
+        self.ui_character_selection_updater = self.ui_character_selection.get_updater()
+
+        # Lobby Waiting
+        lobby_waiting = []
+
+        self.ui_lobby_waiting = tp.Group(lobby_waiting)
+        self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
+
+        self.ui_current_updater = self.ui_character_selection_updater
 
     def setupGameboard(self):
         self.game_board_img = pygame.image.load("assets/textures/Map.png")
@@ -72,7 +102,6 @@ class Pygame:
 
         pygame.display.update()
 
-
     def updateGameboard(self):
         # Using draw.rect module of
         # pygame to draw the solid circle
@@ -85,13 +114,13 @@ class Pygame:
             # char =
             if player["character"] == "Colonel Mustard":
                 pygame.draw.circle(self.screen, charColors.MUSTARD.value,
-                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
             elif player["character"] == "Miss Scarlet":
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
-                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
             elif player["character"] == "Professor Plum":
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
-                                   (xScale[x-1].value,yScale[y-1].value), CIRCLE_R, 0)
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
         pygame.display.update()
 
     def set_game_data_queue(self, queue):
@@ -102,7 +131,8 @@ class Pygame:
         while self.is_running:
             # poll for events
             # pygame.QUIT event means the user clicked X to close your window
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            for event in events:
                 if event.type == pygame.QUIT:
                     self.__quit()
                     self.is_running = False
@@ -122,27 +152,28 @@ class Pygame:
 
             self.game_data = curr_game_data
 
+            self.screen.fill((255, 255, 255))
+
             # Check who's turn
             if self.game_data["player_turn"] == self.player_name:
                 self.game_state = GameState.PlayerTurn
-
 
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 # Temp for minimal
                 self.game_state = GameState.CharacterSelection
 
+
             elif self.game_state == GameState.CharacterSelection:
-                player_name = input("Enter player name: \n")
-                message = {"message_type": "player_join", "player_name": player_name}
-                self.ws.send(json.dumps(message))
-                self.player_name = player_name
-                self.game_state = GameState.LobbyWaiting
+                # player_name = input("Enter player name: \n")
+                pass
+
+
 
             elif self.game_state == GameState.LobbyWaiting:
 
                 print("IN LOBBY WAITING, PLAYER COUNT: ", len(self.game_data["players"]))
-                if(len(self.game_data["players"]) == 3):
+                if len(self.game_data["players"]) == 3:
                     self.game_state = GameState.GameBoardInit
 
 
@@ -162,7 +193,8 @@ class Pygame:
                     if move_type == "move":
                         x = input("Enter x coordinate: \n")
                         y = input("Enter y coordinate: \n")
-                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y, "player_name": self.player_name}
+                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                                   "player_name": self.player_name}
                         break
                     elif move_type == "accuse":
                         message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
@@ -192,6 +224,9 @@ class Pygame:
             # DEBUG RENDER GAME STATE
             text_surface = self.font.render(self.player_name, True, BLACK)
             self.screen.blit(text_surface, (12, 5))
+
+            self.ui_current_updater.update(events=events)
+
             pygame.display.flip()
 
             self.clock.tick(60)  # limits FPS to 60
