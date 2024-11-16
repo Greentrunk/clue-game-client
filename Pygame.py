@@ -18,7 +18,9 @@ import queue
 
 CIRCLE_R = 15
 BLACK = (0, 0, 0)
-
+WHITE = (255, 255, 255)
+SCREEN_WIDTH = 1245
+SCREEN_HEIGHT = 688
 
 class Pygame:
 
@@ -30,11 +32,13 @@ class Pygame:
         self.game_data = {}
         self.game_data_queue = game_data_queue
         self.ws = ws
-        self.screen = pygame.display.set_mode((1245, 688))
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.player_name = ""
 
+        
+        
         tp.init(self.screen, tp.themes.theme_game1)
 
         # Character Selection
@@ -64,10 +68,60 @@ class Pygame:
 
         self.ui_current_updater = self.ui_character_selection_updater
 
+
+    def drawGameStart(self):
+        self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
+        self.start_screen = self.start_screen_img.get_rect()
+        self.start_screen.center = self.screen.get_rect().center
+
+        self.screen.blit(self.start_screen_img, self.start_screen)
+
+        welcome_message = self.font.render("Welcome to Blues Clue-less", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
+
+        name_prompt = self.font.render("Please type your name to start:", True, WHITE)
+        self.screen.blit(name_prompt, ((SCREEN_WIDTH/2) - 200, 120))
+
+        # DEBUG RENDER GAME STATE
+        player_name = self.font.render(self.player_name, True, BLACK)
+        self.screen.blit(player_name, (12, 5))
+        pygame.display.flip()
+
+        pygame.display.update()
+
+    def drawLobby(self):
+        self.lobby_screen_img = pygame.image.load("assets/textures/Lobby.png")
+        self.lobby_screen = self.lobby_screen_img.get_rect()
+        self.lobby_screen.center = self.screen.get_rect().center
+
+        self.screen.blit(self.lobby_screen_img, self.lobby_screen)
+
+        welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
+
+        welcome_message = self.font.render("Your name is:", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 120))
+
+        # DEBUG RENDER GAME STATE
+        player_name = self.font.render(self.player_name, True, WHITE)
+        self.screen.blit(player_name, ((SCREEN_WIDTH/2) +50, 120))
+        pygame.display.flip()
+
+        pygame.display.update()
+
     def setupGameboard(self):
         self.game_board_img = pygame.image.load("assets/textures/Map.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
+        self.screen.blit(self.game_board_img, self.game_board)
+
+
+        # DEBUG RENDER GAME STATE
+        player_name = self.font.render(self.player_name, True, BLACK)
+        self.screen.blit(player_name, (15, 5))
+        # pygame.display.flip()
+
+        pygame.display.update()
 
     def testGrid(self):
         # Create a Grid object
@@ -105,6 +159,8 @@ class Pygame:
     def updateGameboard(self):
         # Using draw.rect module of
         # pygame to draw the solid circle
+
+        self.setupGameboard()
 
         # self.screen.blit(self.game_board_img, self.game_board)
 
@@ -160,18 +216,14 @@ class Pygame:
 
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
+                self.drawGameStart()
                 # Temp for minimal
-                self.game_state = GameState.CharacterSelection
 
-
-            elif self.game_state == GameState.CharacterSelection:
                 # player_name = input("Enter player name: \n")
-                pass
-
-
+                # self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
-
+                self.drawLobby()
                 print("IN LOBBY WAITING, PLAYER COUNT: ", len(self.game_data["players"]))
                 if len(self.game_data["players"]) == 3:
                     self.game_state = GameState.GameBoardInit
@@ -181,9 +233,15 @@ class Pygame:
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
+                print("GAMEBOARD INIT")
+                self.game_state = GameState.PlayerTurn
+
+
 
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
+
+                self.game_state = GameState.PlayerTurn
 
                 pass
             elif self.game_state == GameState.PlayerTurn:
@@ -221,14 +279,8 @@ class Pygame:
             else:
                 print("ERROR: unknown game state")
 
-            # DEBUG RENDER GAME STATE
-            text_surface = self.font.render(self.player_name, True, BLACK)
-            self.screen.blit(text_surface, (12, 5))
-
             self.ui_current_updater.update(events=events)
-
             pygame.display.flip()
-
             self.clock.tick(60)  # limits FPS to 60
 
     def __quit(self):
