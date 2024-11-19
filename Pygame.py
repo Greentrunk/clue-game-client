@@ -186,7 +186,6 @@ class Pygame:
             elif player["character"] == "Professor Plum":
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
                                    (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
-        pygame.display.update()
 
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
@@ -249,8 +248,8 @@ class Pygame:
 
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
-
-                self.game_state = GameState.PlayerTurn
+                #
+                # self.game_state = GameState.PlayerTurn
 
                 pass
             elif self.game_state == GameState.PlayerTurn:
