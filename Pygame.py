@@ -39,6 +39,7 @@ class Pygame:
         self.is_running = True
         self.player_name = ""
         self.is_ready_button_shown = False
+        self.is_turn_ui_shown = False
 
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
@@ -93,6 +94,15 @@ class Pygame:
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
 
 
+        self.player_turn = []
+
+        self.ui_player_turn = tp.Group(self.player_turn)
+
+        self.spare_ui = []
+
+        self.ui_spare_ui = tp.Group(self.spare_ui)
+
+
         self.ui_current_updater = self.ui_player_name_input_updater
 
     def drawGameStart(self):
@@ -144,41 +154,6 @@ class Pygame:
             self.ui_current_updater = self.ui_lobby_ready.get_updater()
         self.ready_button.at_unclick = player_ready_unclick
 
-        # confirm_player_ready = self.player_ready_unclick()
-        # player_name_input.append(self.enter_player_name)
-        # player_name_input.append(self.confirm_player_name)
-        #
-        # button = tp.Button("Standard button")
-        # button.set_draggable()  # set the element as draggable to demonstrate also at_drag method
-        # button.center_on(self.screen)
-        #
-        # def my_function_at_unclick():  # dummy function for the test
-        #     print("Clicked !")
-        #
-        # button.at_unclick = my_function_at_unclick  # defining standard 'click' function (though its technically not a click)
-        #
-        # def my_function_at_drag(dx, dy):  # dummy function for the test ; dx and dy are mandatory !
-        #     print("Element dragged:", dx, dy, ("x- and y-axis movement."))
-        #
-        # button.at_drag = my_function_at_drag  # defining the function to call when we drag the element.
-        #
-        # def my_function_at_hover(a, b, c):  # dummy function for the test
-        #     print("Testing events handling:", a, b, c)
-        #
-        # button.at_hover = my_function_at_hover  # defining the function to call when we start hovering the element.
-        # button.at_hover_params = {"a": "(called at hover)", "b": 12, "c": 15}  # parameters to give at hover
-        #
-        # # at_unhover, at_cancel and _at_click are also redifinables (though the last one is discouraged - see the doc).
-        #
-        # def before_gui():  # add here the things to do each frame before blitting gui elements
-        #     screen.fill((250,) * 3)
-        #
-        # tp.call_before_gui(before_gui)  # tells thorpy to call before_gui() before drawing gui.
-        #
-        # # For the sake of brevity, the main loop is replaced here by a shorter but blackbox-like method
-        # player = button.get_updater().launch()
-
-
     def setupGameboard(self):
         self.screen.blit(self.game_board_img, self.game_board)
 
@@ -186,11 +161,19 @@ class Pygame:
         player_name = self.font.render(self.player_name, True, BLACK)
         self.screen.blit(player_name, (15, 5))
 
+        self.placeCards()
+
     def testGrid(self):
         # Create a Grid object
         grid = Grid(7, 7, 95, self.screen)
         grid.draw_circles()
         grid.draw_grid_lines()
+
+    def placeCards(self):
+        self.card_img = pygame.image.load("assets/cards/Scarlett.png")
+        self.card_img = self.card_img.subsurface()
+        self.card_img.center = self.screen.get_().center
+        self.screen.blit(self.card_img, self.card_img)
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -305,9 +288,12 @@ class Pygame:
 
 
             elif self.game_state == GameState.GameBoardInit:
+
+                self.ui_current_updater = self.ui_player_turn.get_updater()
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
+
                 print("GAMEBOARD INIT")
                 self.game_state = GameState.PlayerTurn
 
@@ -318,34 +304,52 @@ class Pygame:
                 #
                 # self.game_state = GameState.PlayerTurn
 
+
                 pass
             elif self.game_state == GameState.PlayerTurn:
                 while True:
-                    message = {}
-                    move_type = input("User, enter 'move' to move, 'accuse' to accuse', or 'claim' to claim\n")
-                    if move_type == "move":
-                        x = input("Enter x coordinate: \n")
-                        y = input("Enter y coordinate: \n")
-                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                                   "player_name": self.player_name}
-                        break
-                    elif move_type == "accuse":
-                        message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
-                        break
-                    elif move_type == 'claim':
-                        message = {"player_name": self.player_name}
-                        message["message_type"] = "make_claim"
-                        message["character"] = input("Enter character name to claim: \n")
-                        message["weapon"] = input("Enter with what weapon: \n")
-                        message["room"] = input("Enter in what room: \n")
-                        break
-                    else:
-                        print("Invalid move!")
+                    if self.is_turn_ui_shown == False:
+                        print("Up Button Made")
+                        self.up_button = tp.Button("Press to move Up")
+                        self.up_button.center_on(self.screen)
+                        self.player_turn.append(self.up_button)
+                        self.is_turn_ui_shown = True
 
-                self.ws.send(json.dumps(message))
-                print("MOVING TO GAME STATE")
-                self.updateGameboard()
-                self.game_state = GameState.GameBoard
+                    def up_button_unclick():
+                        print("Up Button clicked!")
+                        # self.is_ready_button_shown = False
+                        message = {"message_type": "player_ready", "player_name": self.player_name}
+                        self.ws.send(json.dumps(message))
+
+                        self.ui_current_updater = self.ui_spare_ui.get_updater()
+                        print("MOVING TO GAME STATE")
+                        self.game_state = GameState.GameBoard
+                    self.up_button.at_unclick = up_button_unclick
+
+                # while True:
+                #     message = {}
+                #     move_type = input("User, enter 'move' to move, 'accuse' to accuse', or 'claim' to claim\n")
+                #     if move_type == "move":
+                #         x = input("Enter x coordinate: \n")
+                #         y = input("Enter y coordinate: \n")
+                #         message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                #                    "player_name": self.player_name}
+                #         break
+                #     elif move_type == "accuse":
+                #         message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
+                #         break
+                #     elif move_type == 'claim':
+                #         message = {"player_name": self.player_name}
+                #         message["message_type"] = "make_claim"
+                #         message["character"] = input("Enter character name to claim: \n")
+                #         message["weapon"] = input("Enter with what weapon: \n")
+                #         message["room"] = input("Enter in what room: \n")
+                #         break
+                #     else:
+                #         print("Invalid move!")
+                #
+                # self.ws.send(json.dumps(message))
+                # self.updateGameboard()
 
             elif self.game_state == GameState.PlayerWin:
                 pass
