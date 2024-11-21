@@ -38,6 +38,7 @@ class Pygame:
         self.clock = pygame.time.Clock()
         self.is_running = True
         self.player_name = ""
+        self.is_ready_button_shown = False
 
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
@@ -81,13 +82,12 @@ class Pygame:
         self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
 
         # Lobby Waiting
-        lobby_waiting = []
+        self.lobby_waiting = []
 
-        self.ui_lobby_waiting = tp.Group(lobby_waiting)
+        self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
         self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
         self.ui_current_updater = self.ui_player_name_input_updater
-
 
     def drawGameStart(self):
         self.screen.blit(self.start_screen_img, self.start_screen)
@@ -104,7 +104,7 @@ class Pygame:
 
 
     def drawLobby(self):
-
+        print(self.player_name)
         self.screen.blit(self.lobby_screen_img, self.lobby_screen)
 
         welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
@@ -123,6 +123,53 @@ class Pygame:
         player_count = str(len(self.game_data["players"]))
         player_count_temp = self.font.render(player_count, True, WHITE)
         self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2   + 300), 575))
+
+        if self.is_ready_button_shown == False:
+            self.ready_button = tp.Button("Press to ready up")
+            self.ready_button.center_on(self.screen)
+            self.lobby_waiting.append(self.ready_button)
+            self.is_ready_button_shown = True
+
+        def player_ready_unclick():
+            print("Button clicked!")
+            # self.is_ready_button_shown = False
+            message = {"message_type": "player_ready", "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
+        self.ready_button.at_unclick = player_ready_unclick
+
+        # confirm_player_ready = self.player_ready_unclick()
+        # player_name_input.append(self.enter_player_name)
+        # player_name_input.append(self.confirm_player_name)
+        #
+        # button = tp.Button("Standard button")
+        # button.set_draggable()  # set the element as draggable to demonstrate also at_drag method
+        # button.center_on(self.screen)
+        #
+        # def my_function_at_unclick():  # dummy function for the test
+        #     print("Clicked !")
+        #
+        # button.at_unclick = my_function_at_unclick  # defining standard 'click' function (though its technically not a click)
+        #
+        # def my_function_at_drag(dx, dy):  # dummy function for the test ; dx and dy are mandatory !
+        #     print("Element dragged:", dx, dy, ("x- and y-axis movement."))
+        #
+        # button.at_drag = my_function_at_drag  # defining the function to call when we drag the element.
+        #
+        # def my_function_at_hover(a, b, c):  # dummy function for the test
+        #     print("Testing events handling:", a, b, c)
+        #
+        # button.at_hover = my_function_at_hover  # defining the function to call when we start hovering the element.
+        # button.at_hover_params = {"a": "(called at hover)", "b": 12, "c": 15}  # parameters to give at hover
+        #
+        # # at_unhover, at_cancel and _at_click are also redifinables (though the last one is discouraged - see the doc).
+        #
+        # def before_gui():  # add here the things to do each frame before blitting gui elements
+        #     screen.fill((250,) * 3)
+        #
+        # tp.call_before_gui(before_gui)  # tells thorpy to call before_gui() before drawing gui.
+        #
+        # # For the sake of brevity, the main loop is replaced here by a shorter but blackbox-like method
+        # player = button.get_updater().launch()
 
 
     def setupGameboard(self):
@@ -184,7 +231,16 @@ class Pygame:
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
                                    (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
             elif player["character"] == "Professor Plum":
-                pygame.draw.circle(self.screen, charColors.SCARLET.value,
+                pygame.draw.circle(self.screen, charColors.PLUM.value,
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+            elif player["character"] == "Mrs. Peacock":
+                pygame.draw.circle(self.screen, charColors.PEACOCK.value,
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+            elif player["character"] == "Reverend Green":
+                pygame.draw.circle(self.screen, charColors.GREEN.value,
+                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+            elif player["character"] == "Mrs. White":
+                pygame.draw.circle(self.screen, charColors.WHITE.value,
                                    (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
 
     def set_game_data_queue(self, queue):
@@ -233,7 +289,12 @@ class Pygame:
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                if len(self.game_data["players"]) == 3:
+                self.ui_lobby_waiting_updater.update(events=events)
+
+                # To replace with a game start message sent from the server
+                print("PRE GAME STARTED")
+                if self.game_data["game_start"] == "game_started":
+                    print("GAME STARTED")
                     self.game_state = GameState.GameBoardInit
 
 
