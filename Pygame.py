@@ -87,6 +87,12 @@ class Pygame:
         self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
         self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
+
+        self.lobby_ready = []
+
+        self.ui_lobby_ready = tp.Group(self.lobby_ready)
+
+
         self.ui_current_updater = self.ui_player_name_input_updater
 
     def drawGameStart(self):
@@ -104,7 +110,6 @@ class Pygame:
 
 
     def drawLobby(self):
-        print(self.player_name)
         self.screen.blit(self.lobby_screen_img, self.lobby_screen)
 
         welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
@@ -131,10 +136,12 @@ class Pygame:
             self.is_ready_button_shown = True
 
         def player_ready_unclick():
-            print("Button clicked!")
+            print("Ready Button clicked!")
             # self.is_ready_button_shown = False
             message = {"message_type": "player_ready", "player_name": self.player_name}
             self.ws.send(json.dumps(message))
+
+            self.ui_current_updater = self.ui_lobby_ready.get_updater()
         self.ready_button.at_unclick = player_ready_unclick
 
         # confirm_player_ready = self.player_ready_unclick()
@@ -289,10 +296,9 @@ class Pygame:
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                self.ui_lobby_waiting_updater.update(events=events)
+                self.ui_current_updater.update(events=events)
 
-                # To replace with a game start message sent from the server
-                print("PRE GAME STARTED")
+                # This awaits for the message that the game has started from the server side. This condition is met only when all players join the lobby and ready up by clicking the UI button
                 if self.game_data["game_start"] == "game_started":
                     print("GAME STARTED")
                     self.game_state = GameState.GameBoardInit
