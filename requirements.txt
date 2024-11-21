@@ -1,2 +1,5 @@
 websocket-client
 pygame
+thorpy
+numpy
+Pillow
