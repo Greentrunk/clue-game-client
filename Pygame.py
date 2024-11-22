@@ -212,9 +212,13 @@ class Pygame:
         grid.draw_circles()
         grid.draw_grid_lines()
 
-    def drawCard(self, card, x, y):
+
+
+    def drawCard(self, card, x,y):
         if card == "Scarlett":
             self.screen.blit(self.scarlett_card_img, (x,y))
+        elif card == "{'weapon_card': 'Dagger'}":
+            self.screen.blit(self.knife_card_img, (x, y))
 
     def placeCards(self):
         # This function is meant to place all of the cards that the user has on hand on top of the game board image
@@ -228,8 +232,16 @@ class Pygame:
             # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
             if name == self.player_name:
                 self.cards = player["cards"]
+                count = 0
                 for cards in self.cards:
-                    self.drawCard("Scarlett", 30,30)
+                    print(cards)
+                    self.drawCard(cards, 1030, 90)
+                    self.screen.blit(self.scarlett_card_img, (1030, 90))
+
+                    self.screen.blit(self.knife_card_img, (1030, 490))
+                    count = count + 1
+
+
 
     def placeCharacters(self):
         # Using draw.rect module of
