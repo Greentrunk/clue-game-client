@@ -54,12 +54,37 @@ class Pygame:
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
 
+
+        self.scarlett_card_img = pygame.image.load("assets/cards/Scarlett.png")
+        self.mustard_card_img = pygame.image.load("assets/cards/Mustard.png")
+        self.plum_card_img = pygame.image.load("assets/cards/Plum.png")
+        self.peacock_card_img = pygame.image.load("assets/cards/Peacock.png")
+        self.green_card_img = pygame.image.load("assets/cards/Green.png")
+        self.white_card_img = pygame.image.load("assets/cards/White.png")
+
+        self.candle_card_img = pygame.image.load("assets/cards/CandleStick.png")
+        self.knife_card_img = pygame.image.load("assets/cards/Knife.png")
+        self.pipe_card_img = pygame.image.load("assets/cards/Lead.png")
+        self.rope_card_img = pygame.image.load("assets/cards/Rope.png")
+        self.revolver_card_img = pygame.image.load("assets/cards/Revolver.png")
+        self.wrench_card_img = pygame.image.load("assets/cards/Wrench.png")
+
+        self.dining_card_img = pygame.image.load("assets/cards/Dining.jpg")
+        self.hall_card_img = pygame.image.load("assets/cards/Hall.jpg")
+        self.kitchen_card_img = pygame.image.load("assets/cards/Kitchen.jpg")
+        self.study_card_img = pygame.image.load("assets/cards/Study.jpg")
+        self.lounge_card_img = pygame.image.load("assets/cards/Lounge.jpg")
+        self.conservatory_card_img = pygame.image.load("assets/cards/Conservatory.jpg")
+        self.library_card_img = pygame.image.load("assets/cards/Library.jpg")
+        self.billard_card_img = pygame.image.load("assets/cards/Billard.jpg")
+        self.ballroom_card_img = pygame.image.load("assets/cards/Ballroom.jpg")
+
         
         # User Interface object initialization
         tp.init(self.screen, tp.themes.theme_game1)
 
 
-        # Player Name input UI object
+        # User Interface: Player Name
         player_name_input = []
         self.enter_player_name = tp.TextInput("", placeholder="Enter Player Name")
         self.confirm_player_name = tp.Button("Confirm")
@@ -82,24 +107,52 @@ class Pygame:
         self.ui_player_name_input = tp.Group(player_name_input)
         self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
 
-        # Lobby Waiting
-        self.lobby_waiting = []
 
+        # User Interface: Lobby Waiting
+        self.ready_button = tp.Button("Press to ready up")
+        self.ready_button.center_on(self.screen)
+
+        def player_ready_unclick():
+            print("Ready Button clicked!")
+            # self.is_ready_button_shown = False
+            message = {"message_type": "player_ready", "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
+
+            self.ui_current_updater = self.ui_lobby_ready.get_updater()
+        self.ready_button.at_unclick = player_ready_unclick
+
+        self.lobby_waiting = []
+        self.lobby_waiting.append(self.ready_button)
         self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
         self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
 
+        # User Interface: Lobby Ready
         self.lobby_ready = []
-
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
 
 
-        self.player_turn = []
+        # User Interface: Player Turn
+        self.up_button = tp.Button("Press to move Up")
+        self.up_button.center_on(self.screen)
 
+        def up_button_unclick():
+            print("Up Button clicked!")
+            # self.is_ready_button_shown = False
+            message = {"message_type": "player_ready", "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
+
+            self.ui_current_updater = self.ui_spare_ui.get_updater()
+            print("MOVING TO GAME STATE")
+            self.game_state = GameState.GameBoard
+        self.up_button.at_unclick = up_button_unclick
+
+        self.player_turn = []
+        self.player_turn.append(self.up_button)
         self.ui_player_turn = tp.Group(self.player_turn)
 
-        self.spare_ui = []
 
+        self.spare_ui = []
         self.ui_spare_ui = tp.Group(self.spare_ui)
 
 
@@ -140,19 +193,9 @@ class Pygame:
         self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2   + 300), 575))
 
         if self.is_ready_button_shown == False:
-            self.ready_button = tp.Button("Press to ready up")
-            self.ready_button.center_on(self.screen)
-            self.lobby_waiting.append(self.ready_button)
+
             self.is_ready_button_shown = True
 
-        def player_ready_unclick():
-            print("Ready Button clicked!")
-            # self.is_ready_button_shown = False
-            message = {"message_type": "player_ready", "player_name": self.player_name}
-            self.ws.send(json.dumps(message))
-
-            self.ui_current_updater = self.ui_lobby_ready.get_updater()
-        self.ready_button.at_unclick = player_ready_unclick
 
     def setupGameboard(self):
         self.screen.blit(self.game_board_img, self.game_board)
@@ -169,11 +212,24 @@ class Pygame:
         grid.draw_circles()
         grid.draw_grid_lines()
 
+    def drawCard(self, card, x, y):
+        if card == "Scarlett":
+            self.screen.blit(self.scarlett_card_img, (x,y))
+
     def placeCards(self):
-        self.card_img = pygame.image.load("assets/cards/Scarlett.png")
-        self.card_img = self.card_img.subsurface()
-        self.card_img.center = self.screen.get_().center
-        self.screen.blit(self.card_img, self.card_img)
+        # This function is meant to place all of the cards that the user has on hand on top of the game board image
+
+        #init an array of cards, this will soon be the cards array in the json packet for the player associated with this client
+        self.cards = []
+
+        #scan through all the players in the the game
+        for player in self.game_data["players"]:
+            name = player["name"]
+            # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
+            if name == self.player_name:
+                self.cards = player["cards"]
+                for cards in self.cards:
+                    self.drawCard("Scarlett", 30,30)
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -264,14 +320,10 @@ class Pygame:
 
             self.screen.fill((255, 255, 255))
 
-            # Check who's turn
-            if self.game_data["player_turn"] == self.player_name:
-                self.game_state = GameState.PlayerTurn
-
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 self.drawGameStart()
-                self.ui_current_updater.update(events=events)
+                # self.ui_current_updater.update(events=events)
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
@@ -279,7 +331,7 @@ class Pygame:
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                self.ui_current_updater.update(events=events)
+                # self.ui_current_updater.update(events=events)
 
                 # This awaits for the message that the game has started from the server side. This condition is met only when all players join the lobby and ready up by clicking the UI button
                 if self.game_data["game_start"] == "game_started":
@@ -288,43 +340,35 @@ class Pygame:
 
 
             elif self.game_state == GameState.GameBoardInit:
-
-                self.ui_current_updater = self.ui_player_turn.get_updater()
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
 
                 print("GAMEBOARD INIT")
-                self.game_state = GameState.PlayerTurn
+                # Move on to the playerTurn state only if it is the players Turn
+                self.game_state = GameState.GameBoard
 
 
 
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
-                #
-                # self.game_state = GameState.PlayerTurn
+
+                # Check who's turn
+                # Move on to the playerTurn state only if it is the players Turn
+                if self.game_data["player_turn"] == self.player_name:
+                    self.game_state = GameState.PlayerTurn
+                    self.ui_current_updater = self.ui_player_turn.get_updater()
 
 
                 pass
             elif self.game_state == GameState.PlayerTurn:
-                while True:
-                    if self.is_turn_ui_shown == False:
-                        print("Up Button Made")
-                        self.up_button = tp.Button("Press to move Up")
-                        self.up_button.center_on(self.screen)
-                        self.player_turn.append(self.up_button)
-                        self.is_turn_ui_shown = True
+                if self.is_turn_ui_shown == False:
+                    print("Up Button Made")
+                    self.is_turn_ui_shown = True
+                #
+                # if turn is over:
+                #     self.ui_current_updater = self.ui_p.get_updater()
 
-                    def up_button_unclick():
-                        print("Up Button clicked!")
-                        # self.is_ready_button_shown = False
-                        message = {"message_type": "player_ready", "player_name": self.player_name}
-                        self.ws.send(json.dumps(message))
-
-                        self.ui_current_updater = self.ui_spare_ui.get_updater()
-                        print("MOVING TO GAME STATE")
-                        self.game_state = GameState.GameBoard
-                    self.up_button.at_unclick = up_button_unclick
 
                 # while True:
                 #     message = {}
@@ -358,7 +402,7 @@ class Pygame:
             else:
                 print("ERROR: unknown game state")
 
-            # self.ui_current_updater.update(events=events)
+            self.ui_current_updater.update(events=events)
             pygame.display.flip()
             self.clock.tick(60)  # limits FPS to 60
 
