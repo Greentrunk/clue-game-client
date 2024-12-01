@@ -40,7 +40,7 @@ class Pygame:
         self.player_name = ""
         self.is_ready_button_shown = False
         self.is_turn_ui_shown = False
-
+        self.foo = False
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
@@ -212,13 +212,60 @@ class Pygame:
         grid.draw_circles()
         grid.draw_grid_lines()
 
-
-
     def drawCard(self, card, x,y):
-        if card == "Scarlett":
-            self.screen.blit(self.scarlett_card_img, (x,y))
-        elif card == "{'weapon_card': 'Dagger'}":
+
+        if card['character_card'] == "Miss Scarlett":
+            self.screen.blit(self.scarlett_card_img, (x, y))
+            print("Scarlett printed")
+        elif card['character_card'] == "Colonel Mustard":
+            self.screen.blit(self.mustard_card_img, (x, y))
+            print("Mustard printed")
+        elif card['character_card'] == "Professor Plum":
+            self.screen.blit(self.plum_card_img, (x, y))
+            print("Plum printed")
+        elif card['character_card'] == "Mrs. Peacock":
+            self.screen.blit(self.peacock_card_img, (x, y))
+            print("Peacock printed")
+        elif card['character_card'] == "Reverend Green":
+            self.screen.blit(self.green_card_img, (x, y))
+            print("Green printed")
+        elif card['character_card'] == "Mrs. White":
+            self.screen.blit(self.white_card_img, (x, y))
+            print("White printed")
+
+        elif card['room_card'] == "Study":
+            self.screen.blit(self.study_card_img, (x, y))
+            print("Kitchen PRINTED!!!!!!!!!!!!!!!!!")
+        elif card['room_card'] == "Hall":
+            self.screen.blit(self.hall_card_img, (x, y))
+        elif card['room_card'] == "Lounge":
+            self.screen.blit(self.lounge_card_img, (x, y))
+        elif card['room_card'] == "Library":
+            self.screen.blit(self.library_card_img, (x, y))
+        elif card['room_card'] == "Billiard Room":
+            self.screen.blit(self.billard_card_img, (x, y))
+        elif card['room_card'] == "Dining Room":
+            self.screen.blit(self.dining_card_img, (x, y))
+        elif card['room_card'] == "Conservatory":
+            self.screen.blit(self.conservatory_card_img, (x, y))
+        elif card['room_card'] == "Ballroom":
+            self.screen.blit(self.ballroom_card_img, (x, y))
+        elif card['room_card'] == "Kitchen":
+            self.screen.blit(self.kitchen_card_img, (x, y))
+
+        elif card['weapon_card'] == "Candlestick":
+            self.screen.blit(self.candle_card_img, (x, y))
+            print("DAGGER PRINTED!!!!!!!!!!!!!!!!!")
+        elif card['weapon_card'] == "Dagger":
             self.screen.blit(self.knife_card_img, (x, y))
+        elif card['weapon_card'] == "Lead Pipe":
+            self.screen.blit(self.pipe_card_img, (x, y))
+        elif card['weapon_card'] == "Revolver":
+            self.screen.blit(self.revolver_card_img, (x, y))
+        elif card['weapon_card'] == "Rope":
+            self.screen.blit(self.rope_card_img, (x, y))
+        elif card['weapon_card'] == "Wrench":
+            self.screen.blit(self.wrench_card_img, (x, y))
 
     def placeCards(self):
         # This function is meant to place all of the cards that the user has on hand on top of the game board image
@@ -233,15 +280,19 @@ class Pygame:
             if name == self.player_name:
                 self.cards = player["cards"]
                 count = 0
-                for cards in self.cards:
-                    print(cards)
-                    self.drawCard(cards, 1030, 90)
+                for card in self.cards:
+
+                    # print("Count: ",count)
+                    if(self.foo == False):
+                        print(card)
+                    self.drawCard(card, 1030, 390)
                     self.screen.blit(self.scarlett_card_img, (1030, 90))
+                    #
+                    # self.screen.blit(self.knife_card_img, (1030, 490))
 
-                    self.screen.blit(self.knife_card_img, (1030, 490))
+                    if(count == 5):
+                        self.foo = True
                     count = count + 1
-
-
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -339,7 +390,7 @@ class Pygame:
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
-                # self.game_state = GameState.LobbyWaiting
+                #self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
@@ -359,7 +410,6 @@ class Pygame:
                 print("GAMEBOARD INIT")
                 # Move on to the playerTurn state only if it is the players Turn
                 self.game_state = GameState.GameBoard
-
 
 
             elif self.game_state == GameState.GameBoard:
