@@ -281,16 +281,20 @@ class Pygame:
         self.screen.blit(self.game_board_img, self.game_board)
 
         # DEBUG RENDER GAME STATE
-        player_name = self.font.render(self.player_name, True, BLACK)
-        self.screen.blit(player_name, (15, 5))
+        player_name_text = self.font.render("Player Name: ", True, BLACK)
+        self.screen.blit(player_name_text, (15, 0))
+        player_name = self.font.render((self.player_name), True, BLACK)
+        self.screen.blit(player_name, (220, 0))
+
+        your_cards = self.font.render("Your Cards:", True, BLACK)
+        self.screen.blit(your_cards, (1050, 40))
+
+        title = self.font.render("Blues Clue-less!", True, BLACK)
+        self.screen.blit(title, (580, 0))
 
         self.placeCards()
+        self.placeAvatar()
 
-    def testGrid(self):
-        # Create a Grid object
-        grid = Grid(7, 7, 95, self.screen)
-        grid.draw_circles()
-        grid.draw_grid_lines()
 
     def drawCard(self, card, pos):
         x = pos[0]
@@ -366,6 +370,33 @@ class Pygame:
                     if(count == 5):
                         self.foo = True
                     count = count + 1
+
+    def placeAvatar(self):
+        title = self.font.render("Your Character:", True, BLACK)
+        self.screen.blit(title, (60, 470))
+        avatarX = 120
+        avatarY = 510
+
+        for player in self.game_data["players"]:
+            name = player["name"]
+            # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
+            if name == self.player_name:
+                avatar = player["character"]
+                avatarName = self.font.render(avatar, True, BLACK)
+                self.screen.blit(avatarName, (60, 650))
+                if avatar == "Miss Scarlett":
+                    self.screen.blit(self.scarlett_card_img, (avatarX, avatarY))
+                elif avatar == "Colonel Mustard":
+                    self.screen.blit(self.mustard_card_img, (avatarX, avatarY))
+                elif avatar == "Professor Plum":
+                    self.screen.blit(self.plum_card_img, (avatarX, avatarY))
+                elif avatar == "Mrs. Peacock":
+                    self.screen.blit(self.peacock_card_img, (avatarX, avatarY))
+                elif avatar == "Reverend Green":
+                    self.screen.blit(self.green_card_img, (avatarX, avatarY))
+                elif avatar == "Mrs. White":
+                    self.screen.blit(self.white_card_img, (avatarX, avatarY))
+
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -511,38 +542,6 @@ class Pygame:
                     if (room.value[0] == xScale[x].value) and (room.value[1] == yScale[y].value):
                         self.suggest_button.set_invisible(False)
                         break
-
-                # if not self.is_turn_ui_shown:
-                #     print("Up Button Made")
-                #     self.is_turn_ui_shown = True
-                #
-                # if turn is over:
-                #     self.ui_current_updater = self.ui_p.get_updater()
-
-                # while True:
-                #     message = {}
-                #     move_type = input("User, enter 'move' to move, 'accuse' to accuse', or 'claim' to claim\n")
-                #     if move_type == "move":
-                #         x = input("Enter x coordinate: \n")
-                #         y = input("Enter y coordinate: \n")
-                #         message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                #                    "player_name": self.player_name}
-                #         break
-                #     elif move_type == "accuse":
-                #         message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
-                #         break
-                #     elif move_type == 'claim':
-                #         message = {"player_name": self.player_name}
-                #         message["message_type"] = "make_claim"
-                #         message["character"] = input("Enter character name to claim: \n")
-                #         message["weapon"] = input("Enter with what weapon: \n")
-                #         message["room"] = input("Enter in what room: \n")
-                #         break
-                #     else:
-                #         print("Invalid move!")
-                #
-                # self.ws.send(json.dumps(message))
-                # self.updateGameboard()
 
             elif self.game_state == GameState.PlayerWin:
                 pass
