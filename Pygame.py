@@ -12,7 +12,9 @@ import pygame
 import thorpy as tp
 
 from GameState import GameState
-from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale
+
+from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, cardPos
+
 from Gameboard import Grid
 
 import json
@@ -23,6 +25,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 SCREEN_WIDTH = 1245
 SCREEN_HEIGHT = 688
+
 
 class Pygame:
 
@@ -39,6 +42,8 @@ class Pygame:
         self.is_running = True
         self.player_name = ""
         self.is_ready_button_shown = False
+        self.is_turn_ui_shown = False
+        self.foo = False
 
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
@@ -49,16 +54,38 @@ class Pygame:
         self.lobby_screen = self.lobby_screen_img.get_rect()
         self.lobby_screen.center = self.screen.get_rect().center
 
-        self.game_board_img = pygame.image.load("assets/textures/Map.png")
+        self.game_board_img = pygame.image.load("assets/textures/Map2.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
 
-        
+        self.scarlett_card_img = pygame.image.load("assets/cards/Scarlett.png")
+        self.mustard_card_img = pygame.image.load("assets/cards/Mustard.png")
+        self.plum_card_img = pygame.image.load("assets/cards/Plum.png")
+        self.peacock_card_img = pygame.image.load("assets/cards/Peacock.png")
+        self.green_card_img = pygame.image.load("assets/cards/Green.png")
+        self.white_card_img = pygame.image.load("assets/cards/White.png")
+
+        self.candle_card_img = pygame.image.load("assets/cards/CandleStick.png")
+        self.knife_card_img = pygame.image.load("assets/cards/Knife.png")
+        self.pipe_card_img = pygame.image.load("assets/cards/Lead.png")
+        self.rope_card_img = pygame.image.load("assets/cards/Rope.png")
+        self.revolver_card_img = pygame.image.load("assets/cards/Revolver.png")
+        self.wrench_card_img = pygame.image.load("assets/cards/Wrench.png")
+
+        self.dining_card_img = pygame.image.load("assets/cards/Dining.jpg")
+        self.hall_card_img = pygame.image.load("assets/cards/Hall.jpg")
+        self.kitchen_card_img = pygame.image.load("assets/cards/Kitchen.jpg")
+        self.study_card_img = pygame.image.load("assets/cards/Study.jpg")
+        self.lounge_card_img = pygame.image.load("assets/cards/Lounge.jpg")
+        self.conservatory_card_img = pygame.image.load("assets/cards/Conservatory.jpg")
+        self.library_card_img = pygame.image.load("assets/cards/Library.jpg")
+        self.billard_card_img = pygame.image.load("assets/cards/Billard.jpg")
+        self.ballroom_card_img = pygame.image.load("assets/cards/Ballroom.jpg")
+
         # User Interface object initialization
         tp.init(self.screen, tp.themes.theme_game1)
 
-
-        # Player Name input UI object
+        # User Interface: Player Name
         player_name_input = []
         self.enter_player_name = tp.TextInput("", placeholder="Enter Player Name")
         self.confirm_player_name = tp.Button("Confirm")
@@ -70,7 +97,7 @@ class Pygame:
             self.player_name = player_name
             self.game_state = GameState.LobbyWaiting
 
-            #This needs to change everytime we change states
+            # This needs to change everytime we change states
             self.ui_current_updater = self.ui_lobby_waiting_updater
 
         self.confirm_player_name.at_unclick = player_name_unclick
@@ -81,59 +108,9 @@ class Pygame:
         self.ui_player_name_input = tp.Group(player_name_input)
         self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
 
-        # Lobby Waiting
-        self.lobby_waiting = []
-
-        self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
-        self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
-
-
-        self.lobby_ready = []
-
-        self.ui_lobby_ready = tp.Group(self.lobby_ready)
-
-
-        self.ui_current_updater = self.ui_player_name_input_updater
-
-    def drawGameStart(self):
-        self.screen.blit(self.start_screen_img, self.start_screen)
-
-        welcome_message = self.font.render("Welcome to Blues Clue-less", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
-
-        name_prompt = self.font.render("Please type your name to start:", True, WHITE)
-        self.screen.blit(name_prompt, ((SCREEN_WIDTH/2) - 200, 120))
-
-        # DEBUG RENDER GAME STATE
-        player_name = self.font.render(self.player_name, True, BLACK)
-        self.screen.blit(player_name, (12, 5))
-
-
-    def drawLobby(self):
-        self.screen.blit(self.lobby_screen_img, self.lobby_screen)
-
-        welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
-
-        welcome_message = self.font.render("Your name is:", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 120))
-
-        # DEBUG RENDER GAME STATE
-        player_name = self.font.render(self.player_name, True, WHITE)
-        self.screen.blit(player_name, ((SCREEN_WIDTH/2) +50, 120))
-
-        welcome_message = self.font.render("IN LOBBY WAITING, PLAYER COUNT: ", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2 - 400), 575))
-
-        player_count = str(len(self.game_data["players"]))
-        player_count_temp = self.font.render(player_count, True, WHITE)
-        self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2   + 300), 575))
-
-        if self.is_ready_button_shown == False:
-            self.ready_button = tp.Button("Press to ready up")
-            self.ready_button.center_on(self.screen)
-            self.lobby_waiting.append(self.ready_button)
-            self.is_ready_button_shown = True
+        # User Interface: Lobby Waiting
+        self.ready_button = tp.Button("Press to ready up")
+        self.ready_button.center_on(self.screen)
 
         def player_ready_unclick():
             print("Ready Button clicked!")
@@ -142,55 +119,284 @@ class Pygame:
             self.ws.send(json.dumps(message))
 
             self.ui_current_updater = self.ui_lobby_ready.get_updater()
+
         self.ready_button.at_unclick = player_ready_unclick
 
-        # confirm_player_ready = self.player_ready_unclick()
-        # player_name_input.append(self.enter_player_name)
-        # player_name_input.append(self.confirm_player_name)
-        #
-        # button = tp.Button("Standard button")
-        # button.set_draggable()  # set the element as draggable to demonstrate also at_drag method
-        # button.center_on(self.screen)
-        #
-        # def my_function_at_unclick():  # dummy function for the test
-        #     print("Clicked !")
-        #
-        # button.at_unclick = my_function_at_unclick  # defining standard 'click' function (though its technically not a click)
-        #
-        # def my_function_at_drag(dx, dy):  # dummy function for the test ; dx and dy are mandatory !
-        #     print("Element dragged:", dx, dy, ("x- and y-axis movement."))
-        #
-        # button.at_drag = my_function_at_drag  # defining the function to call when we drag the element.
-        #
-        # def my_function_at_hover(a, b, c):  # dummy function for the test
-        #     print("Testing events handling:", a, b, c)
-        #
-        # button.at_hover = my_function_at_hover  # defining the function to call when we start hovering the element.
-        # button.at_hover_params = {"a": "(called at hover)", "b": 12, "c": 15}  # parameters to give at hover
-        #
-        # # at_unhover, at_cancel and _at_click are also redifinables (though the last one is discouraged - see the doc).
-        #
-        # def before_gui():  # add here the things to do each frame before blitting gui elements
-        #     screen.fill((250,) * 3)
-        #
-        # tp.call_before_gui(before_gui)  # tells thorpy to call before_gui() before drawing gui.
-        #
-        # # For the sake of brevity, the main loop is replaced here by a shorter but blackbox-like method
-        # player = button.get_updater().launch()
+        self.lobby_waiting = []
+        self.lobby_waiting.append(self.ready_button)
+        self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
+        self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
+        # User Interface: Lobby Ready
+        self.lobby_ready = []
+        self.ui_lobby_ready = tp.Group(self.lobby_ready)
+
+        # User Interface: Player Turn
+        self.up_button = tp.Button("Press to move Up")
+        self.up_button.center_on(self.screen)
+
+        def up_button_unclick():
+            print("Up Button clicked!")
+            # self.is_ready_button_shown = False
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = int(player["position"]["x"])
+            y = (int(player["position"]["y"]) - 1) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.up_button.at_unclick = up_button_unclick
+
+        self.down_button = tp.Button("Press to move Down")
+        self.down_button.center_on(self.screen)
+
+        def down_button_unclick():
+            print("Down Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = int(player["position"]["x"])
+            y = (int(player["position"]["y"]) + 1) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.down_button.at_unclick = down_button_unclick
+
+        self.left_button = tp.Button("Press to move Left")
+        self.left_button.center_on(self.screen)
+
+        def left_button_unclick():
+            print("Left Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) - 1) % 7
+            y = int(player["position"]["y"])
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.left_button.at_unclick = left_button_unclick
+
+        self.right_button = tp.Button("Press to move Right")
+        self.right_button.center_on(self.screen)
+
+        def right_button_unclick():
+            print("Right Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) + 1) % 7
+            y = int(player["position"]["y"])
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.right_button.at_unclick = right_button_unclick
+
+        self.suggest_button = tp.Button("Press to suggest")
+        self.suggest_button.center_on(self.screen)
+
+        def suggest_button_unclick():
+            pass
+
+        self.suggest_button.at_unclick = suggest_button_unclick
+        self.suggest_button.set_invisible(True)
+
+        self.player_turn = []
+        self.player_turn.append(self.up_button)
+        self.player_turn.append(self.down_button)
+        self.player_turn.append(self.left_button)
+        self.player_turn.append(self.right_button)
+        self.player_turn.append(self.suggest_button)
+
+        self.ui_player_turn = tp.Group(self.player_turn)
+        self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
+
+        self.spare_ui = []
+        self.ui_spare_ui = tp.Group(self.spare_ui)
+
+        self.ui_current_updater = self.ui_player_name_input_updater
+
+    def drawGameStart(self):
+        self.screen.blit(self.start_screen_img, self.start_screen)
+
+        welcome_message = self.font.render("Welcome to Blues Clue-less", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 20))
+
+        name_prompt = self.font.render("Please type your name to start:", True, WHITE)
+        self.screen.blit(name_prompt, ((SCREEN_WIDTH / 2) - 200, 120))
+
+        # DEBUG RENDER GAME STATE
+        player_name = self.font.render(self.player_name, True, BLACK)
+        self.screen.blit(player_name, (12, 5))
+
+    def drawLobby(self):
+        self.screen.blit(self.lobby_screen_img, self.lobby_screen)
+
+        welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 20))
+
+        welcome_message = self.font.render("Your name is:", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 120))
+
+        # DEBUG RENDER GAME STATE
+        player_name = self.font.render(self.player_name, True, WHITE)
+        self.screen.blit(player_name, ((SCREEN_WIDTH / 2) + 50, 120))
+
+        welcome_message = self.font.render("IN LOBBY WAITING, PLAYER COUNT: ", True, WHITE)
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2 - 400), 575))
+
+        player_count = str(len(self.game_data["players"]))
+        player_count_temp = self.font.render(player_count, True, WHITE)
+        self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2 + 300), 575))
+
+        if self.is_ready_button_shown == False:
+            self.is_ready_button_shown = True
 
     def setupGameboard(self):
         self.screen.blit(self.game_board_img, self.game_board)
 
         # DEBUG RENDER GAME STATE
-        player_name = self.font.render(self.player_name, True, BLACK)
-        self.screen.blit(player_name, (15, 5))
+        player_name_text = self.font.render("Player Name: ", True, BLACK)
+        self.screen.blit(player_name_text, (15, 0))
+        player_name = self.font.render((self.player_name), True, BLACK)
+        self.screen.blit(player_name, (220, 0))
 
-    def testGrid(self):
-        # Create a Grid object
-        grid = Grid(7, 7, 95, self.screen)
-        grid.draw_circles()
-        grid.draw_grid_lines()
+        your_cards = self.font.render("Your Cards:", True, BLACK)
+        self.screen.blit(your_cards, (1050, 40))
+
+        title = self.font.render("Blues Clue-less!", True, BLACK)
+        self.screen.blit(title, (580, 0))
+
+        self.placeCards()
+        self.placeAvatar()
+
+
+    def drawCard(self, card, pos):
+        x = pos[0]
+        y = pos[1]
+        #does the card contain a character card, else skip
+        if ('character_card' in card):
+            if card['character_card'] == "Miss Scarlett":
+                self.screen.blit(self.scarlett_card_img, (x, y))
+            elif card['character_card'] == "Colonel Mustard":
+                self.screen.blit(self.mustard_card_img, (x, y))
+            elif card['character_card'] == "Professor Plum":
+                self.screen.blit(self.plum_card_img, (x, y))
+            elif card['character_card'] == "Mrs. Peacock":
+                self.screen.blit(self.peacock_card_img, (x, y))
+            elif card['character_card'] == "Reverend Green":
+                self.screen.blit(self.green_card_img, (x, y))
+            elif card['character_card'] == "Mrs. White":
+                self.screen.blit(self.white_card_img, (x, y))
+        elif ('room_card' in card):
+            if card['room_card'] == "Study":
+                self.screen.blit(self.study_card_img, (x, y))
+            elif card['room_card'] == "Hall":
+                self.screen.blit(self.hall_card_img, (x, y))
+            elif card['room_card'] == "Lounge":
+                self.screen.blit(self.lounge_card_img, (x, y))
+            elif card['room_card'] == "Library":
+                self.screen.blit(self.library_card_img, (x, y))
+            elif card['room_card'] == "Billiard Room":
+                self.screen.blit(self.billard_card_img, (x, y))
+            elif card['room_card'] == "Dining Room":
+                self.screen.blit(self.dining_card_img, (x, y))
+            elif card['room_card'] == "Conservatory":
+                self.screen.blit(self.conservatory_card_img, (x, y))
+            elif card['room_card'] == "Ballroom":
+                self.screen.blit(self.ballroom_card_img, (x, y))
+            elif card['room_card'] == "Kitchen":
+                self.screen.blit(self.kitchen_card_img, (x, y))
+
+        elif ('weapon_card' in card):
+            if card['weapon_card'] == "Candlestick":
+                self.screen.blit(self.candle_card_img, (x, y))
+            elif card['weapon_card'] == "Dagger":
+                self.screen.blit(self.knife_card_img, (x, y))
+            elif card['weapon_card'] == "Lead Pipe":
+                self.screen.blit(self.pipe_card_img, (x, y))
+            elif card['weapon_card'] == "Revolver":
+                self.screen.blit(self.revolver_card_img, (x, y))
+            elif card['weapon_card'] == "Rope":
+                self.screen.blit(self.rope_card_img, (x, y))
+            elif card['weapon_card'] == "Wrench":
+                self.screen.blit(self.wrench_card_img, (x, y))
+
+    def placeCards(self):
+        # This function is meant to place all of the cards that the user has on hand on top of the game board image
+
+        # init an array of cards, this will soon be the cards array in the json packet for the player associated with this client
+        self.cards = []
+
+        # scan through all the players in the the game
+        for player in self.game_data["players"]:
+            name = player["name"]
+            # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
+            if name == self.player_name:
+                self.cards = player["cards"]
+                count = 0
+
+                for card in self.cards:
+
+                    # print("Count: ",count)
+                    if(self.foo == False):
+                        print(card)
+                    self.drawCard(card, cardPos[count])
+                    if(count == 5):
+                        self.foo = True
+                    count = count + 1
+
+    def placeAvatar(self):
+        title = self.font.render("Your Character:", True, BLACK)
+        self.screen.blit(title, (60, 470))
+        avatarX = 120
+        avatarY = 510
+
+        for player in self.game_data["players"]:
+            name = player["name"]
+            # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
+            if name == self.player_name:
+                avatar = player["character"]
+                avatarName = self.font.render(avatar, True, BLACK)
+                self.screen.blit(avatarName, (60, 650))
+                if avatar == "Miss Scarlett":
+                    self.screen.blit(self.scarlett_card_img, (avatarX, avatarY))
+                elif avatar == "Colonel Mustard":
+                    self.screen.blit(self.mustard_card_img, (avatarX, avatarY))
+                elif avatar == "Professor Plum":
+                    self.screen.blit(self.plum_card_img, (avatarX, avatarY))
+                elif avatar == "Mrs. Peacock":
+                    self.screen.blit(self.peacock_card_img, (avatarX, avatarY))
+                elif avatar == "Reverend Green":
+                    self.screen.blit(self.green_card_img, (avatarX, avatarY))
+                elif avatar == "Mrs. White":
+                    self.screen.blit(self.white_card_img, (avatarX, avatarY))
+
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -233,22 +439,22 @@ class Pygame:
             # char =
             if player["character"] == "Colonel Mustard":
                 pygame.draw.circle(self.screen, charColors.MUSTARD.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
-            elif player["character"] == "Miss Scarlet":
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            elif player["character"] == "Miss Scarlett":
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Professor Plum":
                 pygame.draw.circle(self.screen, charColors.PLUM.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Mrs. Peacock":
                 pygame.draw.circle(self.screen, charColors.PEACOCK.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Reverend Green":
                 pygame.draw.circle(self.screen, charColors.GREEN.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Mrs. White":
                 pygame.draw.circle(self.screen, charColors.WHITE.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
 
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
@@ -281,22 +487,18 @@ class Pygame:
 
             self.screen.fill((255, 255, 255))
 
-            # Check who's turn
-            if self.game_data["player_turn"] == self.player_name:
-                self.game_state = GameState.PlayerTurn
-
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 self.drawGameStart()
-                self.ui_current_updater.update(events=events)
+                # self.ui_current_updater.update(events=events)
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
-                # self.game_state = GameState.LobbyWaiting
+                #self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                self.ui_current_updater.update(events=events)
+                # self.ui_current_updater.update(events=events)
 
                 # This awaits for the message that the game has started from the server side. This condition is met only when all players join the lobby and ready up by clicking the UI button
                 if self.game_data["game_start"] == "game_started":
@@ -308,44 +510,38 @@ class Pygame:
                 self.setupGameboard()
                 # self.testGrid()
                 self.placeCharacters()
-                print("GAMEBOARD INIT")
-                self.game_state = GameState.PlayerTurn
 
+                print("GAMEBOARD INIT")
+                # Move on to the playerTurn state only if it is the players Turn
+                self.game_state = GameState.GameBoard
 
 
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
-                #
-                # self.game_state = GameState.PlayerTurn
 
-                pass
+                # Check who's turn
+                # Move on to the playerTurn state only if it is the players Turn
+                # if self.game_data["player_turn"] == self.player_name:
+                self.game_state = GameState.PlayerTurn
+                self.ui_current_updater = self.ui_player_turn.get_updater()
+
+                # pass
             elif self.game_state == GameState.PlayerTurn:
-                while True:
-                    message = {}
-                    move_type = input("User, enter 'move' to move, 'accuse' to accuse', or 'claim' to claim\n")
-                    if move_type == "move":
-                        x = input("Enter x coordinate: \n")
-                        y = input("Enter y coordinate: \n")
-                        message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                                   "player_name": self.player_name}
-                        break
-                    elif move_type == "accuse":
-                        message = {"message_type": "skip_to_accuse", "player_name": self.player_name}
-                        break
-                    elif move_type == 'claim':
-                        message = {"player_name": self.player_name}
-                        message["message_type"] = "make_claim"
-                        message["character"] = input("Enter character name to claim: \n")
-                        message["weapon"] = input("Enter with what weapon: \n")
-                        message["room"] = input("Enter in what room: \n")
-                        break
-                    else:
-                        print("Invalid move!")
-
-                self.ws.send(json.dumps(message))
-                print("MOVING TO GAME STATE")
                 self.updateGameboard()
-                self.game_state = GameState.GameBoard
+
+                # check if player is in room and update turn possibilites
+                player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+                x = int(player["position"]["x"])
+                y = int(player["position"]["y"])
+
+                for room in rooms:
+                    # print(
+                    #     f"room_coords: {(room.value[0], room.value[1])}, "
+                    #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
+                    self.suggest_button.set_invisible(True)
+                    if (room.value[0] == xScale[x].value) and (room.value[1] == yScale[y].value):
+                        self.suggest_button.set_invisible(False)
+                        break
 
             elif self.game_state == GameState.PlayerWin:
                 pass
@@ -354,7 +550,7 @@ class Pygame:
             else:
                 print("ERROR: unknown game state")
 
-            # self.ui_current_updater.update(events=events)
+            self.ui_current_updater.update(events=events)
             pygame.display.flip()
             self.clock.tick(60)  # limits FPS to 60
 
