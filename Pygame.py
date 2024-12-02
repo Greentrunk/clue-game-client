@@ -12,7 +12,9 @@ import pygame
 import thorpy as tp
 
 from GameState import GameState
-from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, cardPositions, cardPos
+
+from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, cardPos
+
 from Gameboard import Grid
 
 import json
@@ -23,6 +25,7 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 SCREEN_WIDTH = 1245
 SCREEN_HEIGHT = 688
+
 
 class Pygame:
 
@@ -42,6 +45,7 @@ class Pygame:
         self.is_turn_ui_shown = False
         self.foo = False
 
+
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
         self.start_screen.center = self.screen.get_rect().center
@@ -53,7 +57,6 @@ class Pygame:
         self.game_board_img = pygame.image.load("assets/textures/Map2.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
-
 
         self.scarlett_card_img = pygame.image.load("assets/cards/Scarlett.png")
         self.mustard_card_img = pygame.image.load("assets/cards/Mustard.png")
@@ -79,10 +82,8 @@ class Pygame:
         self.billard_card_img = pygame.image.load("assets/cards/Billard.jpg")
         self.ballroom_card_img = pygame.image.load("assets/cards/Ballroom.jpg")
 
-        
         # User Interface object initialization
         tp.init(self.screen, tp.themes.theme_game1)
-
 
         # User Interface: Player Name
         player_name_input = []
@@ -96,7 +97,7 @@ class Pygame:
             self.player_name = player_name
             self.game_state = GameState.LobbyWaiting
 
-            #This needs to change everytime we change states
+            # This needs to change everytime we change states
             self.ui_current_updater = self.ui_lobby_waiting_updater
 
         self.confirm_player_name.at_unclick = player_name_unclick
@@ -106,7 +107,6 @@ class Pygame:
         # appending UI group from player_name_input array
         self.ui_player_name_input = tp.Group(player_name_input)
         self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
-
 
         # User Interface: Lobby Waiting
         self.ready_button = tp.Button("Press to ready up")
@@ -119,6 +119,7 @@ class Pygame:
             self.ws.send(json.dumps(message))
 
             self.ui_current_updater = self.ui_lobby_ready.get_updater()
+
         self.ready_button.at_unclick = player_ready_unclick
 
         self.lobby_waiting = []
@@ -126,11 +127,9 @@ class Pygame:
         self.ui_lobby_waiting = tp.Group(self.lobby_waiting)
         self.ui_lobby_waiting_updater = self.ui_lobby_waiting.get_updater()
 
-
         # User Interface: Lobby Ready
         self.lobby_ready = []
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
-
 
         # User Interface: Player Turn
         self.up_button = tp.Button("Press to move Up")
@@ -139,22 +138,106 @@ class Pygame:
         def up_button_unclick():
             print("Up Button clicked!")
             # self.is_ready_button_shown = False
-            message = {"message_type": "player_ready", "player_name": self.player_name}
-            self.ws.send(json.dumps(message))
 
-            self.ui_current_updater = self.ui_spare_ui.get_updater()
-            print("MOVING TO GAME STATE")
-            self.game_state = GameState.GameBoard
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = int(player["position"]["x"])
+            y = (int(player["position"]["y"]) - 1) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
         self.up_button.at_unclick = up_button_unclick
+
+        self.down_button = tp.Button("Press to move Down")
+        self.down_button.center_on(self.screen)
+
+        def down_button_unclick():
+            print("Down Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = int(player["position"]["x"])
+            y = (int(player["position"]["y"]) + 1) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.down_button.at_unclick = down_button_unclick
+
+        self.left_button = tp.Button("Press to move Left")
+        self.left_button.center_on(self.screen)
+
+        def left_button_unclick():
+            print("Left Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) - 1) % 7
+            y = int(player["position"]["y"])
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.left_button.at_unclick = left_button_unclick
+
+        self.right_button = tp.Button("Press to move Right")
+        self.right_button.center_on(self.screen)
+
+        def right_button_unclick():
+            print("Right Button clicked!")
+
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) + 1) % 7
+            y = int(player["position"]["y"])
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.game_state = GameState.GameBoard
+
+        self.right_button.at_unclick = right_button_unclick
+
+        self.suggest_button = tp.Button("Press to suggest")
+        self.suggest_button.center_on(self.screen)
+
+        def suggest_button_unclick():
+            pass
+
+        self.suggest_button.at_unclick = suggest_button_unclick
+        self.suggest_button.set_invisible(True)
 
         self.player_turn = []
         self.player_turn.append(self.up_button)
-        self.ui_player_turn = tp.Group(self.player_turn)
+        self.player_turn.append(self.down_button)
+        self.player_turn.append(self.left_button)
+        self.player_turn.append(self.right_button)
+        self.player_turn.append(self.suggest_button)
 
+        self.ui_player_turn = tp.Group(self.player_turn)
+        self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
 
         self.spare_ui = []
         self.ui_spare_ui = tp.Group(self.spare_ui)
-
 
         self.ui_current_updater = self.ui_player_name_input_updater
 
@@ -162,40 +245,37 @@ class Pygame:
         self.screen.blit(self.start_screen_img, self.start_screen)
 
         welcome_message = self.font.render("Welcome to Blues Clue-less", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 20))
 
         name_prompt = self.font.render("Please type your name to start:", True, WHITE)
-        self.screen.blit(name_prompt, ((SCREEN_WIDTH/2) - 200, 120))
+        self.screen.blit(name_prompt, ((SCREEN_WIDTH / 2) - 200, 120))
 
         # DEBUG RENDER GAME STATE
         player_name = self.font.render(self.player_name, True, BLACK)
         self.screen.blit(player_name, (12, 5))
 
-
     def drawLobby(self):
         self.screen.blit(self.lobby_screen_img, self.lobby_screen)
 
         welcome_message = self.font.render("You are now in the Lobby", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 20))
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 20))
 
         welcome_message = self.font.render("Your name is:", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2) - 200, 120))
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2) - 200, 120))
 
         # DEBUG RENDER GAME STATE
         player_name = self.font.render(self.player_name, True, WHITE)
-        self.screen.blit(player_name, ((SCREEN_WIDTH/2) +50, 120))
+        self.screen.blit(player_name, ((SCREEN_WIDTH / 2) + 50, 120))
 
         welcome_message = self.font.render("IN LOBBY WAITING, PLAYER COUNT: ", True, WHITE)
-        self.screen.blit(welcome_message, ((SCREEN_WIDTH/2 - 400), 575))
+        self.screen.blit(welcome_message, ((SCREEN_WIDTH / 2 - 400), 575))
 
         player_count = str(len(self.game_data["players"]))
         player_count_temp = self.font.render(player_count, True, WHITE)
-        self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2   + 300), 575))
+        self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2 + 300), 575))
 
         if self.is_ready_button_shown == False:
-
             self.is_ready_button_shown = True
-
 
     def setupGameboard(self):
         self.screen.blit(self.game_board_img, self.game_board)
@@ -266,16 +346,17 @@ class Pygame:
     def placeCards(self):
         # This function is meant to place all of the cards that the user has on hand on top of the game board image
 
-        #init an array of cards, this will soon be the cards array in the json packet for the player associated with this client
+        # init an array of cards, this will soon be the cards array in the json packet for the player associated with this client
         self.cards = []
 
-        #scan through all the players in the the game
+        # scan through all the players in the the game
         for player in self.game_data["players"]:
             name = player["name"]
             # if the name of the player associated with this client matches the json packet at that instance extract the list of cards
             if name == self.player_name:
                 self.cards = player["cards"]
                 count = 0
+
                 for card in self.cards:
 
                     # print("Count: ",count)
@@ -327,22 +408,22 @@ class Pygame:
             # char =
             if player["character"] == "Colonel Mustard":
                 pygame.draw.circle(self.screen, charColors.MUSTARD.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
-            elif player["character"] == "Miss Scarlet":
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            elif player["character"] == "Miss Scarlett":
                 pygame.draw.circle(self.screen, charColors.SCARLET.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Professor Plum":
                 pygame.draw.circle(self.screen, charColors.PLUM.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Mrs. Peacock":
                 pygame.draw.circle(self.screen, charColors.PEACOCK.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Reverend Green":
                 pygame.draw.circle(self.screen, charColors.GREEN.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
             elif player["character"] == "Mrs. White":
                 pygame.draw.circle(self.screen, charColors.WHITE.value,
-                                   (xScale[x - 1].value, yScale[y - 1].value), CIRCLE_R, 0)
+                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
 
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
@@ -409,20 +490,34 @@ class Pygame:
 
                 # Check who's turn
                 # Move on to the playerTurn state only if it is the players Turn
-                if self.game_data["player_turn"] == self.player_name:
-                    self.game_state = GameState.PlayerTurn
-                    self.ui_current_updater = self.ui_player_turn.get_updater()
+                # if self.game_data["player_turn"] == self.player_name:
+                self.game_state = GameState.PlayerTurn
+                self.ui_current_updater = self.ui_player_turn.get_updater()
 
-
-                pass
+                # pass
             elif self.game_state == GameState.PlayerTurn:
-                if self.is_turn_ui_shown == False:
-                    print("Up Button Made")
-                    self.is_turn_ui_shown = True
+                self.updateGameboard()
+
+                # check if player is in room and update turn possibilites
+                player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+                x = int(player["position"]["x"])
+                y = int(player["position"]["y"])
+
+                for room in rooms:
+                    # print(
+                    #     f"room_coords: {(room.value[0], room.value[1])}, "
+                    #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
+                    self.suggest_button.set_invisible(True)
+                    if (room.value[0] == xScale[x].value) and (room.value[1] == yScale[y].value):
+                        self.suggest_button.set_invisible(False)
+                        break
+
+                # if not self.is_turn_ui_shown:
+                #     print("Up Button Made")
+                #     self.is_turn_ui_shown = True
                 #
                 # if turn is over:
                 #     self.ui_current_updater = self.ui_p.get_updater()
-
 
                 # while True:
                 #     message = {}
