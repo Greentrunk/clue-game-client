@@ -12,7 +12,9 @@ import pygame
 import thorpy as tp
 
 from GameState import GameState
-from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves
+
+from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, cardPos
+
 from Gameboard import Grid
 
 import json
@@ -41,6 +43,8 @@ class Pygame:
         self.player_name = ""
         self.is_ready_button_shown = False
         self.is_turn_ui_shown = False
+        self.foo = False
+
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
@@ -50,7 +54,7 @@ class Pygame:
         self.lobby_screen = self.lobby_screen_img.get_rect()
         self.lobby_screen.center = self.screen.get_rect().center
 
-        self.game_board_img = pygame.image.load("assets/textures/Map.png")
+        self.game_board_img = pygame.image.load("assets/textures/Map2.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
 
@@ -288,11 +292,56 @@ class Pygame:
         grid.draw_circles()
         grid.draw_grid_lines()
 
-    def drawCard(self, card, x, y):
-        if card == "Scarlett":
-            self.screen.blit(self.scarlett_card_img, (x, y))
-        elif card == "{'weapon_card': 'Dagger'}":
-            self.screen.blit(self.knife_card_img, (x, y))
+    def drawCard(self, card, pos):
+        x = pos[0]
+        y = pos[1]
+        #does the card contain a character card, else skip
+        if ('character_card' in card):
+            if card['character_card'] == "Miss Scarlett":
+                self.screen.blit(self.scarlett_card_img, (x, y))
+            elif card['character_card'] == "Colonel Mustard":
+                self.screen.blit(self.mustard_card_img, (x, y))
+            elif card['character_card'] == "Professor Plum":
+                self.screen.blit(self.plum_card_img, (x, y))
+            elif card['character_card'] == "Mrs. Peacock":
+                self.screen.blit(self.peacock_card_img, (x, y))
+            elif card['character_card'] == "Reverend Green":
+                self.screen.blit(self.green_card_img, (x, y))
+            elif card['character_card'] == "Mrs. White":
+                self.screen.blit(self.white_card_img, (x, y))
+        elif ('room_card' in card):
+            if card['room_card'] == "Study":
+                self.screen.blit(self.study_card_img, (x, y))
+            elif card['room_card'] == "Hall":
+                self.screen.blit(self.hall_card_img, (x, y))
+            elif card['room_card'] == "Lounge":
+                self.screen.blit(self.lounge_card_img, (x, y))
+            elif card['room_card'] == "Library":
+                self.screen.blit(self.library_card_img, (x, y))
+            elif card['room_card'] == "Billiard Room":
+                self.screen.blit(self.billard_card_img, (x, y))
+            elif card['room_card'] == "Dining Room":
+                self.screen.blit(self.dining_card_img, (x, y))
+            elif card['room_card'] == "Conservatory":
+                self.screen.blit(self.conservatory_card_img, (x, y))
+            elif card['room_card'] == "Ballroom":
+                self.screen.blit(self.ballroom_card_img, (x, y))
+            elif card['room_card'] == "Kitchen":
+                self.screen.blit(self.kitchen_card_img, (x, y))
+
+        elif ('weapon_card' in card):
+            if card['weapon_card'] == "Candlestick":
+                self.screen.blit(self.candle_card_img, (x, y))
+            elif card['weapon_card'] == "Dagger":
+                self.screen.blit(self.knife_card_img, (x, y))
+            elif card['weapon_card'] == "Lead Pipe":
+                self.screen.blit(self.pipe_card_img, (x, y))
+            elif card['weapon_card'] == "Revolver":
+                self.screen.blit(self.revolver_card_img, (x, y))
+            elif card['weapon_card'] == "Rope":
+                self.screen.blit(self.rope_card_img, (x, y))
+            elif card['weapon_card'] == "Wrench":
+                self.screen.blit(self.wrench_card_img, (x, y))
 
     def placeCards(self):
         # This function is meant to place all of the cards that the user has on hand on top of the game board image
@@ -307,12 +356,15 @@ class Pygame:
             if name == self.player_name:
                 self.cards = player["cards"]
                 count = 0
-                for cards in self.cards:
-                    # print(cards)
-                    self.drawCard(cards, 1030, 90)
-                    self.screen.blit(self.scarlett_card_img, (1030, 90))
 
-                    self.screen.blit(self.knife_card_img, (1030, 490))
+                for card in self.cards:
+
+                    # print("Count: ",count)
+                    if(self.foo == False):
+                        print(card)
+                    self.drawCard(card, cardPos[count])
+                    if(count == 5):
+                        self.foo = True
                     count = count + 1
 
     def placeCharacters(self):
@@ -411,7 +463,7 @@ class Pygame:
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
-                # self.game_state = GameState.LobbyWaiting
+                #self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
@@ -431,7 +483,6 @@ class Pygame:
                 print("GAMEBOARD INIT")
                 # Move on to the playerTurn state only if it is the players Turn
                 self.game_state = GameState.GameBoard
-
 
 
             elif self.game_state == GameState.GameBoard:
