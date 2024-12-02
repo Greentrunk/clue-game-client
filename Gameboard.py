@@ -40,7 +40,20 @@ class Grid:
             pygame.draw.line(self.screen, BLACK, (col * self.square_size, 0), (col * self.square_size, self.rows * self.square_size))
 
 
+class cardPositions (Enum):
+    x0 = 1030
+    x1 = 1140
 
+    y0 = 108
+    y1 = 288
+    y2 = 468
+
+cardPos = [(cardPositions.x1.value,cardPositions.y0.value),
+           (cardPositions.x1.value,cardPositions.y1.value),
+           (cardPositions.x1.value,cardPositions.y2.value),
+           (cardPositions.x0.value,cardPositions.y0.value),
+           (cardPositions.x0.value,cardPositions.y1.value),
+           (cardPositions.x0.value,cardPositions.y2.value)]
 
 class customGrid (Enum):
     x0 = 420
