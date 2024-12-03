@@ -333,6 +333,9 @@ class Pygame:
         self.up_right_button.set_invisible(True)
         self.up_left_button.set_invisible(True)
         self.down_left_button.set_invisible(True)
+        self.suggest_character.set_invisible(True)
+        self.suggest_weapon.set_invisible(True)
+        self.suggest_room.set_invisible(True)
         self.suggest_button.set_invisible(True)
 
         self.player_turn = []
@@ -572,6 +575,9 @@ class Pygame:
 
     def check_player_location(self, coords):
         # check if player is in room and update turn possibilites
+        self.suggest_character.set_invisible(True)
+        self.suggest_weapon.set_invisible(True)
+        self.suggest_room.set_invisible(True)
         self.suggest_button.set_invisible(True)
         self.down_right_button.set_invisible(True)
         self.up_right_button.set_invisible(True)
@@ -584,6 +590,9 @@ class Pygame:
             #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
 
             if (room.value[0] == xScale[coords[0]].value) and (room.value[1] == yScale[coords[1]].value):
+                self.suggest_character.set_invisible(False)
+                self.suggest_weapon.set_invisible(False)
+                self.suggest_room.set_invisible(False)
                 self.suggest_button.set_invisible(False)
 
                 # Check if you're in a room with possible diagnol moves
