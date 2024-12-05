@@ -10,6 +10,7 @@ from xml.etree.ElementTree import tostring
 
 import pygame
 import thorpy as tp
+from Tools.demo.spreadsheet import xml2align
 
 from GameState import GameState
 
@@ -45,6 +46,7 @@ class Pygame:
         self.is_ready_button_shown = False
         self.is_turn_ui_shown = False
         self.foo = False
+        self.isAccuse = True
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
@@ -57,6 +59,10 @@ class Pygame:
         self.game_board_img = pygame.image.load("assets/textures/Map2.png")
         self.game_board = self.game_board_img.get_rect()
         self.game_board.center = self.screen.get_rect().center
+
+        self.claim_img = pygame.image.load("assets/textures/Barebackground.png")
+        self.claim_screen = self.claim_img.get_rect()
+        self.claim_screen.center = self.screen.get_rect().center
 
         self.scarlett_card_img = pygame.image.load("assets/cards/Scarlett.png")
         self.mustard_card_img = pygame.image.load("assets/cards/Mustard.png")
@@ -131,7 +137,55 @@ class Pygame:
         self.lobby_ready = []
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
 
-        # User Interface: Player Turn
+
+
+
+
+        # User Interface: Player Turn - High Level
+        self.move_button = tp.Button("Press to Move")
+        self.move_button.center_on(self.screen)
+
+        def move_button_unclick():
+            print("Move Button clicked!")
+            self.ui_current_updater = self.ui_player_move.get_updater()
+
+        self.move_button.at_unclick = move_button_unclick
+
+        self.suggest_button = tp.Button("Press to Suggest")
+        self.suggest_button.center_on(self.screen)
+
+        def suggest_button_unclick():
+            print("Suggest Button clicked!")
+            self.ui_current_updater = self.ui_player_claim.get_updater()
+            self.isAccuse = False
+            self.game_state = GameState.Claim
+
+        self.suggest_button.at_unclick = suggest_button_unclick
+
+        self.accuse_button = tp.Button("Press to Accuse")
+        self.accuse_button.center_on(self.screen)
+
+        def accuse_button_unclick():
+            print("Accuse Button clicked!")
+            self.ui_current_updater = self.ui_player_claim.get_updater()
+            self.isAccuse = True
+            self.game_state = GameState.Claim
+
+        self.accuse_button.at_unclick = accuse_button_unclick
+
+        self.player_turn = []
+        self.player_turn.append(self.move_button)
+        self.player_turn.append(self.suggest_button)
+        self.player_turn.append(self.accuse_button)
+
+        self.ui_player_turn = tp.Group(self.player_turn)
+        self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
+
+
+
+
+
+        # User Interface: Player Turn - Move
         self.up_button = tp.Button("Press to move Up")
         self.up_button.center_on(self.screen)
 
@@ -305,14 +359,38 @@ class Pygame:
 
         self.down_left_button.at_unclick = down_left_button_unclick
 
-        self.suggest_button = tp.Button("Press to suggest")
-        self.suggest_button.center_on(self.screen)
+        self.down_right_button.set_invisible(True)
+        self.up_right_button.set_invisible(True)
+        self.up_left_button.set_invisible(True)
+        self.down_left_button.set_invisible(True)
+
+        self.player_move = []
+        self.player_move.append(self.up_button)
+        self.player_move.append(self.down_button)
+        self.player_move.append(self.left_button)
+        self.player_move.append(self.right_button)
+        self.player_move.append(self.down_right_button)
+        self.player_move.append(self.up_right_button)
+        self.player_move.append(self.up_left_button)
+        self.player_move.append(self.down_left_button)
+
+        self.ui_player_move = tp.Group(self.player_move)
+        self.ui_player_move.set_center(175, SCREEN_HEIGHT / 2)
+
+        self.ui_current_updater = self.ui_player_move.get_updater()
+
+
+
+        # User Interface: Player Turn - Suggest
+
+        self.suggest_confirm_button = tp.Button("Press to suggest")
+        self.suggest_confirm_button.center_on(self.screen)
 
         self.suggest_character = tp.TextInput("", placeholder="Suggest Character")
         self.suggest_weapon = tp.TextInput("", placeholder="Suggest Weapon")
         self.suggest_room = tp.TextInput("", placeholder="Suggest Room")
 
-        def suggest_button_unclick():
+        def suggest_confirm_button_unclick():
             print("Suggestion button clicked!")
 
             character = self.suggest_character.value
@@ -327,33 +405,24 @@ class Pygame:
             print("MOVING TO GAME BOARD")
             self.game_state = GameState.GameBoard
 
-        self.suggest_button.at_unclick = suggest_button_unclick
+        self.suggest_confirm_button.at_unclick = suggest_confirm_button_unclick
 
-        self.down_right_button.set_invisible(True)
-        self.up_right_button.set_invisible(True)
-        self.up_left_button.set_invisible(True)
-        self.down_left_button.set_invisible(True)
-        self.suggest_character.set_invisible(True)
-        self.suggest_weapon.set_invisible(True)
-        self.suggest_room.set_invisible(True)
-        self.suggest_button.set_invisible(True)
+        self.player_claim = []
 
-        self.player_turn = []
-        self.player_turn.append(self.up_button)
-        self.player_turn.append(self.down_button)
-        self.player_turn.append(self.left_button)
-        self.player_turn.append(self.right_button)
-        self.player_turn.append(self.down_right_button)
-        self.player_turn.append(self.up_right_button)
-        self.player_turn.append(self.up_left_button)
-        self.player_turn.append(self.down_left_button)
-        self.player_turn.append(self.suggest_character)
-        self.player_turn.append(self.suggest_weapon)
-        self.player_turn.append(self.suggest_room)
-        self.player_turn.append(self.suggest_button)
+        self.player_claim.append(self.suggest_character)
+        self.player_claim.append(self.suggest_weapon)
+        self.player_claim.append(self.suggest_room)
+        self.player_claim.append(self.suggest_confirm_button)
 
-        self.ui_player_turn = tp.Group(self.player_turn)
-        self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
+        self.ui_player_claim = tp.Group(self.player_claim)
+        self.ui_player_claim.set_center(175, SCREEN_HEIGHT / 2)
+
+        self.ui_current_updater = self.ui_player_claim.get_updater()
+
+
+        # User Interface: Player Turn - Accuse
+
+
 
         self.spare_ui = []
         self.ui_spare_ui = tp.Group(self.spare_ui)
@@ -573,12 +642,60 @@ class Pygame:
                 pygame.draw.circle(self.screen, charColors.WHITE.value,
                                    (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
 
+
+    def claimScreen(self, isAccuse):
+        self.screen.blit(self.claim_img, self.claim_screen)
+
+        y0 = 50
+        y1 = 250
+        y2 = 450
+
+        x0 = 50
+        x1 = 200
+        self.screen.blit(self.scarlett_card_img, (x0, y0))
+        self.screen.blit(self.mustard_card_img, (x1, y0))
+        self.screen.blit(self.plum_card_img, (x0, y1))
+        self.screen.blit(self.peacock_card_img, (x1, y1))
+        self.screen.blit(self.green_card_img, (x0,y2))
+        self.screen.blit(self.white_card_img, (x1,y2))
+
+        x2 = 425
+        x3 = 575
+        self.screen.blit(self.knife_card_img, (x2, y0))
+        self.screen.blit(self.wrench_card_img, (x3, y0))
+        self.screen.blit(self.rope_card_img, (x2, y1))
+        self.screen.blit(self.revolver_card_img, (x3, y1))
+        self.screen.blit(self.pipe_card_img, (x2, y2))
+        self.screen.blit(self.candle_card_img, (x3, y2))
+
+        x4 = 800
+        x5 = 950
+        x6 = 1100
+        self.screen.blit(self.study_card_img, (x4, y0))
+        self.screen.blit(self.hall_card_img, (x5, y0))
+        self.screen.blit(self.lounge_card_img, (x6, y0))
+        self.screen.blit(self.library_card_img, (x4, y1))
+        self.screen.blit(self.billard_card_img, (x5, y1))
+        self.screen.blit(self.dining_card_img, (x6, y1))
+        self.screen.blit(self.conservatory_card_img, (x4, y2))
+        self.screen.blit(self.ballroom_card_img, (x5, y2))
+        self.screen.blit(self.kitchen_card_img, (x6, y2))
+
+        if isAccuse == True:
+            title = self.font.render("Make your Accusation!", True, BLACK)
+            self.screen.blit(title, (SCREEN_WIDTH/2, 0))
+        else:
+            title = self.font.render("Make your Suggestion!", True, BLACK)
+            self.screen.blit(title, (SCREEN_WIDTH/2, 0))
+
+
+
     def check_player_location(self, coords):
         # check if player is in room and update turn possibilites
         self.suggest_character.set_invisible(True)
         self.suggest_weapon.set_invisible(True)
         self.suggest_room.set_invisible(True)
-        self.suggest_button.set_invisible(True)
+        self.suggest_confirm_button.set_invisible(True)
         self.down_right_button.set_invisible(True)
         self.up_right_button.set_invisible(True)
         self.up_left_button.set_invisible(True)
@@ -593,7 +710,7 @@ class Pygame:
                 self.suggest_character.set_invisible(False)
                 self.suggest_weapon.set_invisible(False)
                 self.suggest_room.set_invisible(False)
-                self.suggest_button.set_invisible(False)
+                self.suggest_confirm_button.set_invisible(False)
 
                 # Check if you're in a room with possible diagnol moves
                 if room.value[0] == roomLocations.STUDY.value[0] and room.value[1] == roomLocations.STUDY.value[
@@ -683,8 +800,8 @@ class Pygame:
             elif self.game_state == GameState.PlayerTurn:
                 self.updateGameboard()
 
-
-
+            elif self.game_state == GameState.Claim:
+                self.claimScreen(self.isAccuse)
 
 
             elif self.game_state == GameState.PlayerWin:
