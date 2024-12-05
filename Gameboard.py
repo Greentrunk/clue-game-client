@@ -131,6 +131,8 @@ rooms = [roomLocations.STUDY, roomLocations.HALL, roomLocations.LOUNGE, roomLoca
          roomLocations.BILLIARD, roomLocations.DINING, roomLocations.CONSERVATORY, roomLocations.BALLROOM,
          roomLocations.KITCHEN]
 
+
+
 possible_moves = [(customGrid.x1.value, customGrid.y1.value), (customGrid.x2.value, customGrid.y1.value),
                   (customGrid.x3.value, customGrid.y1.value), (customGrid.x4.value, customGrid.y1.value),
                   (customGrid.x5.value, customGrid.y1.value), (customGrid.x1.value, customGrid.y2.value),

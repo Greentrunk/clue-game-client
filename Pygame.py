@@ -13,7 +13,8 @@ import thorpy as tp
 
 from GameState import GameState
 
-from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, cardPos
+from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, \
+    cardPos, roomLocations
 
 from Gameboard import Grid
 
@@ -44,7 +45,6 @@ class Pygame:
         self.is_ready_button_shown = False
         self.is_turn_ui_shown = False
         self.foo = False
-
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
@@ -150,6 +150,7 @@ class Pygame:
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
 
         self.up_button.at_unclick = up_button_unclick
@@ -171,6 +172,7 @@ class Pygame:
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
 
         self.down_button.at_unclick = down_button_unclick
@@ -192,6 +194,7 @@ class Pygame:
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
 
         self.left_button.at_unclick = left_button_unclick
@@ -213,17 +216,126 @@ class Pygame:
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
 
         self.right_button.at_unclick = right_button_unclick
 
+        self.down_right_button = tp.Button("Press to move to Kitchen")
+        self.down_right_button.center_on(self.screen)
+
+        def down_right_button_unclick():
+            print("Down Right Button clicked!")
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) + 4) % 7
+            y = (int(player["position"]["y"]) + 4) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
+                    self.game_state = GameState.GameBoard
+
+        self.down_right_button.at_unclick = down_right_button_unclick
+
+        self.up_right_button = tp.Button("Press to move to Lounge")
+        self.up_right_button.center_on(self.screen)
+
+        def up_right_button_unclick():
+            print("Up Right Button clicked!")
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) + 4) % 7
+            y = (int(player["position"]["y"]) - 4) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
+                    self.game_state = GameState.GameBoard
+
+        self.up_right_button.at_unclick = up_right_button_unclick
+
+        self.up_left_button = tp.Button("Press to move to Study")
+        self.up_left_button.center_on(self.screen)
+
+        def up_left_button_unclick():
+            print("Up Left Button clicked!")
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) - 4) % 7
+            y = (int(player["position"]["y"]) - 4) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
+                    self.game_state = GameState.GameBoard
+
+        self.up_left_button.at_unclick = up_left_button_unclick
+
+        self.down_left_button = tp.Button("Press to move to Conservatory")
+        self.down_left_button.center_on(self.screen)
+
+        def down_left_button_unclick():
+            print("Down Left Button clicked!")
+            player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+            x = (int(player["position"]["x"]) - 4) % 7
+            y = (int(player["position"]["y"]) + 4) % 7
+
+            for move in possible_moves:
+                if move[0] == xScale[x].value and move[1] == yScale[y].value:
+                    message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
+                               "player_name": self.player_name}
+                    self.ws.send(json.dumps(message))
+                    self.ui_current_updater = self.ui_spare_ui.get_updater()
+                    print("MOVING TO GAME BOARD")
+                    self.check_player_location((x, y))
+                    self.game_state = GameState.GameBoard
+
+        self.down_left_button.at_unclick = down_left_button_unclick
+
         self.suggest_button = tp.Button("Press to suggest")
         self.suggest_button.center_on(self.screen)
 
+        self.suggest_character = tp.TextInput("", placeholder="Suggest Character")
+        self.suggest_weapon = tp.TextInput("", placeholder="Suggest Weapon")
+        self.suggest_room = tp.TextInput("", placeholder="Suggest Room")
+
         def suggest_button_unclick():
-            pass
+            print("Suggestion button clicked!")
+
+            character = self.suggest_character.value
+            weapon = self.suggest_weapon.value
+            room = self.suggest_room.value
+
+            # need to check if suggestion is valid
+            message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False, "character": character, "weapon": weapon,
+                       "room": room}
+            self.ws.send(json.dumps(message))
+            self.ui_current_updater = self.ui_spare_ui.get_updater()
+            print("MOVING TO GAME BOARD")
+            self.game_state = GameState.GameBoard
 
         self.suggest_button.at_unclick = suggest_button_unclick
+
+        self.down_right_button.set_invisible(True)
+        self.up_right_button.set_invisible(True)
+        self.up_left_button.set_invisible(True)
+        self.down_left_button.set_invisible(True)
+        self.suggest_character.set_invisible(True)
+        self.suggest_weapon.set_invisible(True)
+        self.suggest_room.set_invisible(True)
         self.suggest_button.set_invisible(True)
 
         self.player_turn = []
@@ -231,6 +343,13 @@ class Pygame:
         self.player_turn.append(self.down_button)
         self.player_turn.append(self.left_button)
         self.player_turn.append(self.right_button)
+        self.player_turn.append(self.down_right_button)
+        self.player_turn.append(self.up_right_button)
+        self.player_turn.append(self.up_left_button)
+        self.player_turn.append(self.down_left_button)
+        self.player_turn.append(self.suggest_character)
+        self.player_turn.append(self.suggest_weapon)
+        self.player_turn.append(self.suggest_room)
         self.player_turn.append(self.suggest_button)
 
         self.ui_player_turn = tp.Group(self.player_turn)
@@ -295,11 +414,10 @@ class Pygame:
         self.placeCards()
         self.placeAvatar()
 
-
     def drawCard(self, card, pos):
         x = pos[0]
         y = pos[1]
-        #does the card contain a character card, else skip
+        # does the card contain a character card, else skip
         if ('character_card' in card):
             if card['character_card'] == "Miss Scarlett":
                 self.screen.blit(self.scarlett_card_img, (x, y))
@@ -364,10 +482,10 @@ class Pygame:
                 for card in self.cards:
 
                     # print("Count: ",count)
-                    if(self.foo == False):
+                    if (self.foo == False):
                         print(card)
                     self.drawCard(card, cardPos[count])
-                    if(count == 5):
+                    if (count == 5):
                         self.foo = True
                     count = count + 1
 
@@ -396,7 +514,6 @@ class Pygame:
                     self.screen.blit(self.green_card_img, (avatarX, avatarY))
                 elif avatar == "Mrs. White":
                     self.screen.blit(self.white_card_img, (avatarX, avatarY))
-
 
     def placeCharacters(self):
         # Using draw.rect module of
@@ -456,12 +573,49 @@ class Pygame:
                 pygame.draw.circle(self.screen, charColors.WHITE.value,
                                    (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
 
+    def check_player_location(self, coords):
+        # check if player is in room and update turn possibilites
+        self.suggest_character.set_invisible(True)
+        self.suggest_weapon.set_invisible(True)
+        self.suggest_room.set_invisible(True)
+        self.suggest_button.set_invisible(True)
+        self.down_right_button.set_invisible(True)
+        self.up_right_button.set_invisible(True)
+        self.up_left_button.set_invisible(True)
+        self.down_left_button.set_invisible(True)
+
+        for room in rooms:
+            # print(
+            #     f"room_coords: {(room.value[0], room.value[1])}, "
+            #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
+
+            if (room.value[0] == xScale[coords[0]].value) and (room.value[1] == yScale[coords[1]].value):
+                self.suggest_character.set_invisible(False)
+                self.suggest_weapon.set_invisible(False)
+                self.suggest_room.set_invisible(False)
+                self.suggest_button.set_invisible(False)
+
+                # Check if you're in a room with possible diagnol moves
+                if room.value[0] == roomLocations.STUDY.value[0] and room.value[1] == roomLocations.STUDY.value[
+                    1]:
+                    self.down_right_button.set_invisible(False)
+                elif room.value[0] == roomLocations.CONSERVATORY.value[0] and room.value[1] == \
+                        roomLocations.CONSERVATORY.value[1]:
+                    self.up_right_button.set_invisible(False)
+                elif room.value[0] == roomLocations.KITCHEN.value[0] and room.value[1] == \
+                        roomLocations.KITCHEN.value[1]:
+                    self.up_left_button.set_invisible(False)
+                elif room.value[0] == roomLocations.LOUNGE.value[0] and room.value[1] == \
+                        roomLocations.LOUNGE.value[1]:
+                    self.down_left_button.set_invisible(False)
+
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
 
     def run(self):
         curr_game_data = {}
         while self.is_running:
+
             # poll for events
             # pygame.QUIT event means the user clicked X to close your window
             events = pygame.event.get()
@@ -494,7 +648,7 @@ class Pygame:
                 # Temp for minimal
 
                 # player_name = input("Enter player name: \n")
-                #self.game_state = GameState.LobbyWaiting
+                # self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
@@ -529,19 +683,9 @@ class Pygame:
             elif self.game_state == GameState.PlayerTurn:
                 self.updateGameboard()
 
-                # check if player is in room and update turn possibilites
-                player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
-                x = int(player["position"]["x"])
-                y = int(player["position"]["y"])
 
-                for room in rooms:
-                    # print(
-                    #     f"room_coords: {(room.value[0], room.value[1])}, "
-                    #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
-                    self.suggest_button.set_invisible(True)
-                    if (room.value[0] == xScale[x].value) and (room.value[1] == yScale[y].value):
-                        self.suggest_button.set_invisible(False)
-                        break
+
+
 
             elif self.game_state == GameState.PlayerWin:
                 pass
