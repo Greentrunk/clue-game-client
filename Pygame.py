@@ -167,16 +167,36 @@ class Pygame:
 
         def accuse_button_unclick():
             print("Accuse Button clicked!")
+            message = {"message_type": "skip_to_accuse",
+                       "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_player_claim.get_updater()
             self.isAccuse = True
             self.game_state = GameState.Claim
 
         self.accuse_button.at_unclick = accuse_button_unclick
 
+
+        self.end_turn_button = tp.Button("Press to End Turn")
+        self.end_turn_button.center_on(self.screen)
+
+        def end_turn_button_unclick():
+            print("End Turn Button clicked!")
+            message = {"message_type": "skip_to_end",
+                       "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
+            message = {"message_type": "next_phase",
+                       "player_name": self.player_name}
+            self.ws.send(json.dumps(message))
+            self.ui_current_updater = self.ui_spare_ui.get_updater()
+
+        self.end_turn_button.at_unclick = end_turn_button_unclick
+
         self.player_turn = []
         self.player_turn.append(self.move_button)
         self.player_turn.append(self.suggest_button)
         self.player_turn.append(self.accuse_button)
+        self.player_turn.append(self.end_turn_button)
 
         self.ui_player_turn = tp.Group(self.player_turn)
         self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
@@ -792,9 +812,9 @@ class Pygame:
 
                 # Check who's turn
                 # Move on to the playerTurn state only if it is the players Turn
-                # if self.game_data["player_turn"] == self.player_name:
-                self.game_state = GameState.PlayerTurn
-                self.ui_current_updater = self.ui_player_turn.get_updater()
+                if self.game_data["player_turn"] == self.player_name:
+                    self.game_state = GameState.PlayerTurn
+                    self.ui_current_updater = self.ui_player_turn.get_updater()
 
                 # pass
             elif self.game_state == GameState.PlayerTurn:
