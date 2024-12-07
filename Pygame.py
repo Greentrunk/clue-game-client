@@ -185,10 +185,9 @@ class Pygame:
             message = {"message_type": "skip_to_end",
                        "player_name": self.player_name}
             self.ws.send(json.dumps(message))
-            message = {"message_type": "next_phase",
-                       "player_name": self.player_name}
-            self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_spare_ui.get_updater()
+            self.game_state = GameState.GameBoard
+
 
         self.end_turn_button.at_unclick = end_turn_button_unclick
 
@@ -722,9 +721,6 @@ class Pygame:
         self.down_left_button.set_invisible(True)
 
         for room in rooms:
-            # print(
-            #     f"room_coords: {(room.value[0], room.value[1])}, "
-            #     f" player_coords: {(xScale[x].value, yScale[y].value)}")
 
             if (room.value[0] == xScale[coords[0]].value) and (room.value[1] == yScale[coords[1]].value):
                 self.suggest_character.set_invisible(False)
@@ -781,15 +777,9 @@ class Pygame:
             # RENDER/LOGIC HERE BASED ON GAME STATE
             if self.game_state == GameState.GameStart:
                 self.drawGameStart()
-                # self.ui_current_updater.update(events=events)
-                # Temp for minimal
-
-                # player_name = input("Enter player name: \n")
-                # self.game_state = GameState.LobbyWaiting
 
             elif self.game_state == GameState.LobbyWaiting:
                 self.drawLobby()
-                # self.ui_current_updater.update(events=events)
 
                 # This awaits for the message that the game has started from the server side. This condition is met only when all players join the lobby and ready up by clicking the UI button
                 if self.game_data["game_start"] == "game_started":
@@ -813,6 +803,7 @@ class Pygame:
                 # Check who's turn
                 # Move on to the playerTurn state only if it is the players Turn
                 if self.game_data["player_turn"] == self.player_name:
+                    print(self.player_name, "it is your turn!")
                     self.game_state = GameState.PlayerTurn
                     self.ui_current_updater = self.ui_player_turn.get_updater()
 
