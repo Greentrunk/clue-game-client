@@ -64,6 +64,10 @@ class Pygame:
         self.claim_screen = self.claim_img.get_rect()
         self.claim_screen.center = self.screen.get_rect().center
 
+        self.win_screen_img = pygame.image.load("assets/textures/winScreen.png")
+        self.win_screen = self.win_screen_img.get_rect()
+        self.win_screen.center = self.screen.get_rect().center
+
         self.scarlett_card_img = pygame.image.load("assets/cards/Scarlett.png")
         self.mustard_card_img = pygame.image.load("assets/cards/Mustard.png")
         self.plum_card_img = pygame.image.load("assets/cards/Plum.png")
@@ -388,39 +392,44 @@ class Pygame:
 
         self.ui_current_updater = self.ui_player_move.get_updater()
 
-        # User Interface: Player Turn - Suggest
+        # User Interface: Player Turn - claim
 
-        self.suggest_confirm_button = tp.Button("Press to suggest")
-        self.suggest_confirm_button.center_on(self.screen)
+        self.claim_confirm_button = tp.Button("Press to claim")
+        self.claim_confirm_button.center_on(self.screen)
 
-        self.suggest_character = tp.TextInput("", placeholder="Suggest Character")
-        self.suggest_weapon = tp.TextInput("", placeholder="Suggest Weapon")
-        self.suggest_room = tp.TextInput("", placeholder="Suggest Room")
+        self.claim_character = tp.TextInput("", placeholder="Claim Character")
+        self.claim_weapon = tp.TextInput("", placeholder="Claim Weapon")
+        self.claim_room = tp.TextInput("", placeholder="Claim Room")
 
-        def suggest_confirm_button_unclick():
-            print("Suggestion button clicked!")
+        def claim_confirm_button_unclick():
+            print("claim button clicked!")
 
-            character = self.suggest_character.value
-            weapon = self.suggest_weapon.value
-            room = self.suggest_room.value
+            character = self.claim_character.value
+            weapon = self.claim_weapon.value
+            room = self.claim_room.value
 
-            # need to check if suggestion is valid
-            message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False,
-                       "character": character, "weapon": weapon,
-                       "room": room}
+            # need to check if claim is valid
+            if self.isAccuse == True:
+                message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": True,
+                           "character": character, "weapon": weapon,
+                           "room": room}
+            else:
+                message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False,
+                           "character": character, "weapon": weapon,
+                           "room": room}
             self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_spare_ui.get_updater()
             print("MOVING TO GAME BOARD")
             self.game_state = GameState.GameBoard
 
-        self.suggest_confirm_button.at_unclick = suggest_confirm_button_unclick
+        self.claim_confirm_button.at_unclick = claim_confirm_button_unclick
 
         self.player_claim = []
 
-        self.player_claim.append(self.suggest_character)
-        self.player_claim.append(self.suggest_weapon)
-        self.player_claim.append(self.suggest_room)
-        self.player_claim.append(self.suggest_confirm_button)
+        self.player_claim.append(self.claim_character)
+        self.player_claim.append(self.claim_weapon)
+        self.player_claim.append(self.claim_room)
+        self.player_claim.append(self.claim_confirm_button)
 
         self.ui_player_claim = tp.Group(self.player_claim)
         self.ui_player_claim.set_center(175, SCREEN_HEIGHT / 2)
@@ -693,18 +702,19 @@ class Pygame:
         self.screen.blit(self.pipe_card_img, (x2, y2))
         self.screen.blit(self.candle_card_img, (x3, y2))
 
-        x4 = 800
-        x5 = 950
-        x6 = 1100
-        self.screen.blit(self.study_card_img, (x4, y0))
-        self.screen.blit(self.hall_card_img, (x5, y0))
-        self.screen.blit(self.lounge_card_img, (x6, y0))
-        self.screen.blit(self.library_card_img, (x4, y1))
-        self.screen.blit(self.billard_card_img, (x5, y1))
-        self.screen.blit(self.dining_card_img, (x6, y1))
-        self.screen.blit(self.conservatory_card_img, (x4, y2))
-        self.screen.blit(self.ballroom_card_img, (x5, y2))
-        self.screen.blit(self.kitchen_card_img, (x6, y2))
+        if isAccuse == True:
+            x4 = 800
+            x5 = 950
+            x6 = 1100
+            self.screen.blit(self.study_card_img, (x4, y0))
+            self.screen.blit(self.hall_card_img, (x5, y0))
+            self.screen.blit(self.lounge_card_img, (x6, y0))
+            self.screen.blit(self.library_card_img, (x4, y1))
+            self.screen.blit(self.billard_card_img, (x5, y1))
+            self.screen.blit(self.dining_card_img, (x6, y1))
+            self.screen.blit(self.conservatory_card_img, (x4, y2))
+            self.screen.blit(self.ballroom_card_img, (x5, y2))
+            self.screen.blit(self.kitchen_card_img, (x6, y2))
 
         if isAccuse == True:
             title = self.font.render("Make your Accusation!", True, BLACK)
@@ -713,12 +723,23 @@ class Pygame:
             title = self.font.render("Make your Suggestion!", True, BLACK)
             self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
 
+    def winScreen(self):
+        winner = self.game_data["winner"]
+
+        self.screen.blit(self.win_screen_img, self.win_screen)
+        title = self.font.render(winner, True, WHITE)
+        self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
+        title = self.font.render("Has won the game of Blues Clue-less", True, WHITE)
+        self.screen.blit(title, (SCREEN_WIDTH / 2, 50))
+
+
+
     def check_player_location(self, coords):
         # check if player is in room and update turn possibilites
-        self.suggest_character.set_invisible(True)
-        self.suggest_weapon.set_invisible(True)
-        self.suggest_room.set_invisible(True)
-        self.suggest_confirm_button.set_invisible(True)
+        self.claim_character.set_invisible(True)
+        self.claim_weapon.set_invisible(True)
+        self.claim_room.set_invisible(True)
+        self.claim_confirm_button.set_invisible(True)
         self.down_right_button.set_invisible(True)
         self.up_right_button.set_invisible(True)
         self.up_left_button.set_invisible(True)
@@ -727,10 +748,10 @@ class Pygame:
         for room in rooms:
 
             if (room.value[0] == xScale[coords[0]].value) and (room.value[1] == yScale[coords[1]].value):
-                self.suggest_character.set_invisible(False)
-                self.suggest_weapon.set_invisible(False)
-                self.suggest_room.set_invisible(False)
-                self.suggest_confirm_button.set_invisible(False)
+                self.claim_character.set_invisible(False)
+                self.claim_weapon.set_invisible(False)
+                self.claim_room.set_invisible(False)
+                self.claim_confirm_button.set_invisible(False)
 
                 # Check if you're in a room with possible diagnol moves
                 if room.value[0] == roomLocations.STUDY.value[0] and room.value[1] == roomLocations.STUDY.value[
@@ -804,12 +825,15 @@ class Pygame:
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
 
-                # Check who's turn
-                # Move on to the playerTurn state only if it is the players Turn
-                if self.game_data["player_turn"] == self.player_name:
-                    print(self.player_name, "it is your turn!")
-                    self.game_state = GameState.PlayerTurn
-                    self.ui_current_updater = self.ui_player_turn.get_updater()
+                if self.game_data["winner"] is None:
+                    # Check who's turn
+                    # Move on to the playerTurn state only if it is the players Turn
+                    if self.game_data["player_turn"] == self.player_name:
+                        print(self.player_name, "it is your turn!")
+                        self.game_state = GameState.PlayerTurn
+                        self.ui_current_updater = self.ui_player_turn.get_updater()
+                else:
+                    self.game_state = GameState.PlayerWin
 
                 # pass
             elif self.game_state == GameState.PlayerTurn:
@@ -820,7 +844,8 @@ class Pygame:
 
 
             elif self.game_state == GameState.PlayerWin:
-                pass
+                self.winScreen()
+
             elif self.game_state == GameState.PlayerLoss:
                 pass
             else:
