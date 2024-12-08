@@ -17,6 +17,7 @@ class GameState(Enum):
     GameBoardInit = "Game Board Init"
     GameBoard = "Game Board"
     PlayerTurn = "Player Turn"
+    Claim = "Claim"
     PlayerWin = "Player Win"
     PlayerLoss = "Player Loss"
 
