@@ -137,10 +137,6 @@ class Pygame:
         self.lobby_ready = []
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
 
-
-
-
-
         # User Interface: Player Turn - High Level
         self.move_button = tp.Button("Press to Move")
         self.move_button.center_on(self.screen)
@@ -176,7 +172,6 @@ class Pygame:
 
         self.accuse_button.at_unclick = accuse_button_unclick
 
-
         self.end_turn_button = tp.Button("Press to End Turn")
         self.end_turn_button.center_on(self.screen)
 
@@ -188,7 +183,6 @@ class Pygame:
             self.ui_current_updater = self.ui_spare_ui.get_updater()
             self.game_state = GameState.GameBoard
 
-
         self.end_turn_button.at_unclick = end_turn_button_unclick
 
         self.player_turn = []
@@ -199,10 +193,6 @@ class Pygame:
 
         self.ui_player_turn = tp.Group(self.player_turn)
         self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
-
-
-
-
 
         # User Interface: Player Turn - Move
         self.up_button = tp.Button("Press to move Up")
@@ -398,8 +388,6 @@ class Pygame:
 
         self.ui_current_updater = self.ui_player_move.get_updater()
 
-
-
         # User Interface: Player Turn - Suggest
 
         self.suggest_confirm_button = tp.Button("Press to suggest")
@@ -417,7 +405,8 @@ class Pygame:
             room = self.suggest_room.value
 
             # need to check if suggestion is valid
-            message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False, "character": character, "weapon": weapon,
+            message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False,
+                       "character": character, "weapon": weapon,
                        "room": room}
             self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_spare_ui.get_updater()
@@ -438,10 +427,7 @@ class Pygame:
 
         self.ui_current_updater = self.ui_player_claim.get_updater()
 
-
         # User Interface: Player Turn - Accuse
-
-
 
         self.spare_ui = []
         self.ui_spare_ui = tp.Group(self.spare_ui)
@@ -490,7 +476,7 @@ class Pygame:
         # DEBUG RENDER GAME STATE
         player_name_text = self.font.render("Player Name: ", True, BLACK)
         self.screen.blit(player_name_text, (15, 0))
-        player_name = self.font.render((self.player_name), True, BLACK)
+        player_name = self.font.render(self.player_name, True, BLACK)
         self.screen.blit(player_name, (220, 0))
 
         your_cards = self.font.render("Your Cards:", True, BLACK)
@@ -636,31 +622,51 @@ class Pygame:
 
         self.setupGameboard()
 
-        # self.screen.blit(self.game_board_img, self.game_board)
+        # need to render current player positions, as well as non player character starting positions
+        # complete hack, but whatever is left over should have their starting positions rendered
+        characters = {"Colonel Mustard": [spawnLocations.spawnMustard.value, charColors.MUSTARD.value],
+                      "Miss Scarlett": [spawnLocations.spawnScarlet.value, charColors.SCARLET.value],
+                      "Professor Plum": [spawnLocations.spawnPlum.value, charColors.PLUM.value],
+                      "Mrs.Peacock": [spawnLocations.spawnPeacock.value, charColors.PEACOCK.value],
+                      "Reverend Green": [spawnLocations.spawnGreen.value, charColors.GREEN.value],
+                      "Mrs. White": [spawnLocations.spawnWhite.value, charColors.WHITE.value]}
 
         for player in self.game_data["players"]:
             x = player["position"]["x"]
             y = player["position"]["y"]
+            player_params = characters[player["character"]]
             # char =
-            if player["character"] == "Colonel Mustard":
-                pygame.draw.circle(self.screen, charColors.MUSTARD.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
-            elif player["character"] == "Miss Scarlett":
-                pygame.draw.circle(self.screen, charColors.SCARLET.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
-            elif player["character"] == "Professor Plum":
-                pygame.draw.circle(self.screen, charColors.PLUM.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
-            elif player["character"] == "Mrs. Peacock":
-                pygame.draw.circle(self.screen, charColors.PEACOCK.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
-            elif player["character"] == "Reverend Green":
-                pygame.draw.circle(self.screen, charColors.GREEN.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
-            elif player["character"] == "Mrs. White":
-                pygame.draw.circle(self.screen, charColors.WHITE.value,
-                                   (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            # if player["character"] == "Colonel Mustard":
+            #     pygame.draw.circle(self.screen, charColors.MUSTARD.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            # elif player["character"] == "Miss Scarlett":
+            #     pygame.draw.circle(self.screen, charColors.SCARLET.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            # elif player["character"] == "Professor Plum":
+            #     pygame.draw.circle(self.screen, charColors.PLUM.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            # elif player["character"] == "Mrs. Peacock":
+            #     pygame.draw.circle(self.screen, charColors.PEACOCK.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            # elif player["character"] == "Reverend Green":
+            #     pygame.draw.circle(self.screen, charColors.GREEN.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            # elif player["character"] == "Mrs. White":
+            #     pygame.draw.circle(self.screen, charColors.WHITE.value,
+            #                        (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            #     del characters[player["character"]]
+            pygame.draw.circle(self.screen, player_params[1], (xScale[x].value, yScale[y].value), CIRCLE_R, 0)
+            del characters[player["character"]]
 
+        # render starting positions for unused characters
+        for characterParams in characters.values():
+            pygame.draw.circle(self.screen, characterParams[1],
+                               characterParams[0], CIRCLE_R, 0)
 
     def claimScreen(self, isAccuse):
         self.screen.blit(self.claim_img, self.claim_screen)
@@ -675,8 +681,8 @@ class Pygame:
         self.screen.blit(self.mustard_card_img, (x1, y0))
         self.screen.blit(self.plum_card_img, (x0, y1))
         self.screen.blit(self.peacock_card_img, (x1, y1))
-        self.screen.blit(self.green_card_img, (x0,y2))
-        self.screen.blit(self.white_card_img, (x1,y2))
+        self.screen.blit(self.green_card_img, (x0, y2))
+        self.screen.blit(self.white_card_img, (x1, y2))
 
         x2 = 425
         x3 = 575
@@ -702,12 +708,10 @@ class Pygame:
 
         if isAccuse == True:
             title = self.font.render("Make your Accusation!", True, BLACK)
-            self.screen.blit(title, (SCREEN_WIDTH/2, 0))
+            self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
         else:
             title = self.font.render("Make your Suggestion!", True, BLACK)
-            self.screen.blit(title, (SCREEN_WIDTH/2, 0))
-
-
+            self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
 
     def check_player_location(self, coords):
         # check if player is in room and update turn possibilites
