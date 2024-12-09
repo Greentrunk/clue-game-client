@@ -156,6 +156,7 @@ class Pygame:
 
         def suggest_button_unclick():
             print("Suggest Button clicked!")
+            self.suggest_button.set_invisible(True)
             self.ui_current_updater = self.ui_player_claim.get_updater()
             self.isAccuse = False
             self.game_state = GameState.Claim
@@ -181,6 +182,7 @@ class Pygame:
 
         def end_turn_button_unclick():
             print("End Turn Button clicked!")
+            self.move_button.set_invisible(False)
             message = {"message_type": "skip_to_end",
                        "player_name": self.player_name}
             self.ws.send(json.dumps(message))
@@ -204,8 +206,7 @@ class Pygame:
 
         def up_button_unclick():
             print("Up Button clicked!")
-            # self.is_ready_button_shown = False
-
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = int(player["position"]["x"])
             y = (int(player["position"]["y"]) - 1) % 7
@@ -213,7 +214,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -227,7 +228,7 @@ class Pygame:
 
         def down_button_unclick():
             print("Down Button clicked!")
-
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = int(player["position"]["x"])
             y = (int(player["position"]["y"]) + 1) % 7
@@ -235,7 +236,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -249,7 +250,7 @@ class Pygame:
 
         def left_button_unclick():
             print("Left Button clicked!")
-
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) - 1) % 7
             y = int(player["position"]["y"])
@@ -257,7 +258,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -271,7 +272,7 @@ class Pygame:
 
         def right_button_unclick():
             print("Right Button clicked!")
-
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) + 1) % 7
             y = int(player["position"]["y"])
@@ -279,7 +280,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -293,6 +294,7 @@ class Pygame:
 
         def down_right_button_unclick():
             print("Down Right Button clicked!")
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) + 4) % 7
             y = (int(player["position"]["y"]) + 4) % 7
@@ -300,7 +302,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -314,6 +316,8 @@ class Pygame:
 
         def up_right_button_unclick():
             print("Up Right Button clicked!")
+
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) + 4) % 7
             y = (int(player["position"]["y"]) - 4) % 7
@@ -321,7 +325,7 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
@@ -335,6 +339,8 @@ class Pygame:
 
         def up_left_button_unclick():
             print("Up Left Button clicked!")
+
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) - 4) % 7
             y = (int(player["position"]["y"]) - 4) % 7
@@ -342,12 +348,13 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
                     self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
+
 
         self.up_left_button.at_unclick = up_left_button_unclick
 
@@ -356,6 +363,8 @@ class Pygame:
 
         def down_left_button_unclick():
             print("Down Left Button clicked!")
+
+            self.move_button.set_invisible(True)
             player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
             x = (int(player["position"]["x"]) - 4) % 7
             y = (int(player["position"]["y"]) + 4) % 7
@@ -363,12 +372,13 @@ class Pygame:
             for move in possible_moves:
                 if move[0] == xScale[x].value and move[1] == yScale[y].value:
                     message = {"message_type": "player_move", "x_coord": x, "y_coord": y,
-                               "player_name": self.player_name}
+                               "player_name": self.player_name, "was_moved": False}
                     self.ws.send(json.dumps(message))
                     self.ui_current_updater = self.ui_spare_ui.get_updater()
                     print("MOVING TO GAME BOARD")
                     self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
+
 
         self.down_left_button.at_unclick = down_left_button_unclick
 
@@ -414,11 +424,18 @@ class Pygame:
                            "character": character, "weapon": weapon,
                            "room": room}
             else:
+                # #move character from the suggestion
+                # message = {"message_type": "move_character", "x_coord": x, "y_coord": y,
+                #            "character": }
+                # self.ws.send(json.dumps(message))
+
+                #send the suggestion to the server
                 message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False,
                            "character": character, "weapon": weapon,
                            "room": room}
             self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_spare_ui.get_updater()
+            self.suggest_button.set_invisible(True)
             print("MOVING TO GAME BOARD")
             self.game_state = GameState.GameBoard
 
@@ -732,6 +749,9 @@ class Pygame:
         title = self.font.render("Has won the game of Blues Clue-less", True, WHITE)
         self.screen.blit(title, (SCREEN_WIDTH / 2, 50))
 
+    def playerLoss(self):
+        title = self.font.render("You made an incorrect accusation. You are now inactive.", True, BLACK)
+        self.screen.blit(title, (675, 400))
 
 
     def check_player_location(self, coords):
@@ -766,6 +786,18 @@ class Pygame:
                 elif room.value[0] == roomLocations.LOUNGE.value[0] and room.value[1] == \
                         roomLocations.LOUNGE.value[1]:
                     self.down_left_button.set_invisible(False)
+
+    def check_if_in_room(self, coords):
+        self.suggest_button.set_invisible(True)
+
+        for player in self.game_data["players"]:
+            if player["name"] == self.player_name:
+                x = player["position"]["x"]
+                y = player["position"]["y"]
+                if (x == 1 or x == 3 or x == 5) and (y == 1 or y == 3 or y == 5):
+                    self.suggest_button.set_invisible(False)
+
+
 
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
@@ -825,6 +857,10 @@ class Pygame:
             elif self.game_state == GameState.GameBoard:
                 self.updateGameboard()
 
+                for player in self.game_data["players"]:
+                    if player["name"] == self.player_name:
+                        if player["is_active"] == False:
+                            self.playerLoss()
                 if self.game_data["winner"] is None:
                     # Check who's turn
                     # Move on to the playerTurn state only if it is the players Turn
@@ -832,6 +868,11 @@ class Pygame:
                         print(self.player_name, "it is your turn!")
                         self.game_state = GameState.PlayerTurn
                         self.ui_current_updater = self.ui_player_turn.get_updater()
+                        for player in self.game_data["players"]:
+                            if player["name"] == self.player_name:
+                                x = int(player["position"]["x"])
+                                y = (int(player["position"]["y"]) - 1) % 7
+                                self.check_if_in_room((x,y))
                 else:
                     self.game_state = GameState.PlayerWin
 
