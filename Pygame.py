@@ -119,7 +119,7 @@ class Pygame:
         self.ui_player_name_input_updater = self.ui_player_name_input.get_updater()
 
         # User Interface: Lobby Waiting
-        self.ready_button = tp.Button("Press to ready up")
+        self.ready_button = tp.Button("Ready up")
         self.ready_button.center_on(self.screen)
 
         def player_ready_unclick():
@@ -142,7 +142,7 @@ class Pygame:
         self.ui_lobby_ready = tp.Group(self.lobby_ready)
 
         # User Interface: Player Turn - High Level
-        self.move_button = tp.Button("Press to Move")
+        self.move_button = tp.Button("Move")
         self.move_button.center_on(self.screen)
 
         def move_button_unclick():
@@ -151,7 +151,7 @@ class Pygame:
 
         self.move_button.at_unclick = move_button_unclick
 
-        self.suggest_button = tp.Button("Press to Suggest")
+        self.suggest_button = tp.Button("Suggest")
         self.suggest_button.center_on(self.screen)
 
         def suggest_button_unclick():
@@ -163,7 +163,7 @@ class Pygame:
 
         self.suggest_button.at_unclick = suggest_button_unclick
 
-        self.accuse_button = tp.Button("Press to Accuse")
+        self.accuse_button = tp.Button("Accuse")
         self.accuse_button.center_on(self.screen)
 
         def accuse_button_unclick():
@@ -177,7 +177,7 @@ class Pygame:
 
         self.accuse_button.at_unclick = accuse_button_unclick
 
-        self.end_turn_button = tp.Button("Press to End Turn")
+        self.end_turn_button = tp.Button("End Turn")
         self.end_turn_button.center_on(self.screen)
 
         def end_turn_button_unclick():
@@ -201,7 +201,7 @@ class Pygame:
         self.ui_player_turn.set_center(175, SCREEN_HEIGHT / 2)
 
         # User Interface: Player Turn - Move
-        self.up_button = tp.Button("Press to move Up")
+        self.up_button = tp.Button("Move Up")
         self.up_button.center_on(self.screen)
 
         def up_button_unclick():
@@ -223,7 +223,7 @@ class Pygame:
 
         self.up_button.at_unclick = up_button_unclick
 
-        self.down_button = tp.Button("Press to move Down")
+        self.down_button = tp.Button("Move Down")
         self.down_button.center_on(self.screen)
 
         def down_button_unclick():
@@ -245,7 +245,7 @@ class Pygame:
 
         self.down_button.at_unclick = down_button_unclick
 
-        self.left_button = tp.Button("Press to move Left")
+        self.left_button = tp.Button("Move Left")
         self.left_button.center_on(self.screen)
 
         def left_button_unclick():
@@ -267,7 +267,7 @@ class Pygame:
 
         self.left_button.at_unclick = left_button_unclick
 
-        self.right_button = tp.Button("Press to move Right")
+        self.right_button = tp.Button("Move Right")
         self.right_button.center_on(self.screen)
 
         def right_button_unclick():
@@ -289,7 +289,7 @@ class Pygame:
 
         self.right_button.at_unclick = right_button_unclick
 
-        self.down_right_button = tp.Button("Press to move to Kitchen")
+        self.down_right_button = tp.Button("Move to Kitchen")
         self.down_right_button.center_on(self.screen)
 
         def down_right_button_unclick():
@@ -311,7 +311,7 @@ class Pygame:
 
         self.down_right_button.at_unclick = down_right_button_unclick
 
-        self.up_right_button = tp.Button("Press to move to Lounge")
+        self.up_right_button = tp.Button("Move to Lounge")
         self.up_right_button.center_on(self.screen)
 
         def up_right_button_unclick():
@@ -334,7 +334,7 @@ class Pygame:
 
         self.up_right_button.at_unclick = up_right_button_unclick
 
-        self.up_left_button = tp.Button("Press to move to Study")
+        self.up_left_button = tp.Button("Move to Study")
         self.up_left_button.center_on(self.screen)
 
         def up_left_button_unclick():
@@ -358,7 +358,7 @@ class Pygame:
 
         self.up_left_button.at_unclick = up_left_button_unclick
 
-        self.down_left_button = tp.Button("Press to move to Conservatory")
+        self.down_left_button = tp.Button("Move to Conservatory")
         self.down_left_button.center_on(self.screen)
 
         def down_left_button_unclick():
@@ -404,7 +404,7 @@ class Pygame:
 
         # User Interface: Player Turn - claim
 
-        self.claim_confirm_button = tp.Button("Press to claim")
+        self.claim_confirm_button = tp.Button("Make a claim")
         self.claim_confirm_button.center_on(self.screen)
 
         self.claim_character = tp.TextInput("", placeholder="Claim Character")
