@@ -134,7 +134,7 @@ rooms = [roomLocations.STUDY, roomLocations.HALL, roomLocations.LOUNGE, roomLoca
          roomLocations.KITCHEN]
 
 room_map = {
-    (1, 1): "Study", (3, 1): "Hall", (5, 1): "Lounge", (1, 3): "Library", (3, 3): "Billiard", (5, 3): "Dining",
+    (1, 1): "Study", (3, 1): "Hall", (5, 1): "Lounge", (1, 3): "Library", (3, 3): "Billiard Room", (5, 3): "Dining Room",
     (1, 5): "Conservatory", (3, 5): "Ballroom", (5, 5): "Kitchen"
 }
 
