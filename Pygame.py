@@ -47,6 +47,7 @@ class Pygame:
         self.is_turn_ui_shown = False
         self.foo = False
         self.isAccuse = True
+        self.SuggestionMade = False
 
         self.start_screen_img = pygame.image.load("assets/textures/Start.jpg")
         self.start_screen = self.start_screen_img.get_rect()
@@ -431,6 +432,7 @@ class Pygame:
                            "character": character, "weapon": weapon,
                            "room": room}
             else:
+                self.SuggestionMade = True
                 # #move character from the suggestion
                 # message = {"message_type": "move_character", "x_coord": x, "y_coord": y,
                 #            "character": }
