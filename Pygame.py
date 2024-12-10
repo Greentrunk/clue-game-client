@@ -6,11 +6,8 @@ This module contains the Pygame class
 Author: John Fiorini & Christopher Pohl
 Date: 2024-11-10
 """
-from xml.etree.ElementTree import tostring
-
 import pygame
 import thorpy as tp
-from Tools.demo.spreadsheet import xml2align
 
 from GameState import GameState
 
@@ -874,8 +871,9 @@ class Pygame:
             # self.screen.fill("black")
 
             self.game_data = curr_game_data
-            latest_claim = self.select_latest_claim(self.game_data["claims"])
-            self.report_claim(latest_claim)
+            if "claims" in self.game_data:
+                latest_claim = self.select_latest_claim(self.game_data["claims"])
+                self.report_claim(latest_claim)
 
             self.screen.fill((255, 255, 255))
 
