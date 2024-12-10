@@ -32,6 +32,7 @@ class Pygame:
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
+        self.font20 = pygame.font.SysFont('Comic Sans MS', 20)
         self.game_state = GameState.GameStart
         self.game_data = {}
         self.game_data_queue = game_data_queue
@@ -702,6 +703,12 @@ class Pygame:
             pygame.draw.circle(self.screen, characterParams[1],
                                characterParams[0], CIRCLE_R, 0)
 
+        # print (self.game_data["claims"])
+        if "claims" in self.game_data:
+            latest_claim = self.select_latest_claim(self.game_data["claims"])
+            # print(latest_claim)
+            self.report_claim(latest_claim)
+
     def claimScreen(self, isAccuse):
         self.screen.blit(self.claim_img, self.claim_screen)
 
@@ -752,6 +759,8 @@ class Pygame:
         if claim is None:
             return
 
+        print("REPORT CLAIM")
+
         is_suggestion = "suggestion" in claim
         type = "suggestion" if is_suggestion else "claim"
         inner_data = claim[type]
@@ -763,22 +772,26 @@ class Pygame:
         disprover = claim["disprover"]
         disproving_subject = claim["disproving_subject"]
 
-
+        string2 = "foo"
         if is_suggestion:
             string = f"{player} made suggestion: {character} in the {room} with the {weapon}"
             if was_disproven:
-                string += f"\n {disprover} disproved with {disproving_subject}"
+                string2 += f"{disprover} disproved with {disproving_subject}"
             else:
-                string += "No one could disprove this claim"
+                string2 += "No one could disprove this claim"
         else:
             string = f"{player} made accusation: {character} in the {room} with the {weapon}"
             if was_disproven:
-                string += f"\n {player} was incorrect and loses."
+                string2 += f"{player} was incorrect and loses."
             else:
-                string += f"\n {player} was correct and wins!"
+                string2 += f"{player} was correct and wins!"
 
-        title = self.font.render(string, True, BLACK)
-        self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
+        print(string)
+
+        title = self.font20.render(string, True, BLACK)
+        self.screen.blit(title, (300, 625))
+        title = self.font20.render(string2, True, BLACK)
+        self.screen.blit(title, (500, 660))
 
     def select_latest_claim(self, claims):
         latest_claim = None
@@ -879,9 +892,6 @@ class Pygame:
             # self.screen.fill("black")
 
             self.game_data = curr_game_data
-            if "claims" in self.game_data:
-                latest_claim = self.select_latest_claim(self.game_data["claims"])
-                self.report_claim(latest_claim)
 
             self.screen.fill((255, 255, 255))
 
@@ -929,6 +939,7 @@ class Pygame:
                                 self.check_if_in_room((x, y))
                 else:
                     self.game_state = GameState.PlayerWin
+
 
                 # pass
             elif self.game_state == GameState.PlayerTurn:
