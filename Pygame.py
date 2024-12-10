@@ -740,6 +740,49 @@ class Pygame:
             title = self.font.render("Make your Suggestion!", True, BLACK)
             self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
 
+    def report_claim(self, claim):
+        is_suggestion = "suggestion" in claim
+        type = "suggestion" if is_suggestion else "claim"
+        inner_data = claim[type]
+        player = inner_data["player"]
+        character = inner_data["character"]
+        room = inner_data["room"]
+        weapon = inner_data["weapon"]
+        was_disproven = "disprover" in claim and claim["disprover"] is not None
+        disprover = claim["disprover"]
+        disproving_subject = claim["disproving_subject"]
+
+
+        if is_suggestion:
+            string = f"{player} made suggestion: {character} in the {room} with the {weapon}"
+            if was_disproven:
+                string += f"\n {disprover} disproved with {disproving_subject}"
+            else:
+                string += "No one could disprove this claim"
+        else:
+            string = f"{player} made accusation: {character} in the {room} with the {weapon}"
+            if was_disproven:
+                string += f"\n {player} was incorrect and loses."
+            else:
+                string += f"\n {player} was correct and wins!"
+
+        title = self.font.render(string, True, BLACK)
+        self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
+
+    def select_latest_claim(self, claims):
+        latest_claim = None
+        max_timestamp = float('-inf')
+
+        for claim in claims:
+            for key in ['suggestion', 'accusation']:
+                if key in claim:
+                    timestamp = claim[key].get('timestamp', float('-inf'))
+                    if timestamp > max_timestamp:
+                        max_timestamp = timestamp
+                        latest_claim = claim
+
+        return latest_claim
+
     def winScreen(self):
         winner = self.game_data["winner"]
 
@@ -828,6 +871,8 @@ class Pygame:
             # self.screen.fill("black")
 
             self.game_data = curr_game_data
+            latest_claim = self.select_latest_claim(self.game_data["claims"])
+            self.report_claim(latest_claim)
 
             self.screen.fill((255, 255, 255))
 
