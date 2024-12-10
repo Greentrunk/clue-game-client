@@ -741,6 +741,9 @@ class Pygame:
             self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
 
     def report_claim(self, claim):
+        if claim is None:
+            return
+
         is_suggestion = "suggestion" in claim
         type = "suggestion" if is_suggestion else "claim"
         inner_data = claim[type]
