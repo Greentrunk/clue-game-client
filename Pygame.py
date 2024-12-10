@@ -6,11 +6,8 @@ This module contains the Pygame class
 Author: John Fiorini & Christopher Pohl
 Date: 2024-11-10
 """
-from xml.etree.ElementTree import tostring
-
 import pygame
 import thorpy as tp
-from Tools.demo.spreadsheet import xml2align
 
 from GameState import GameState
 
@@ -35,6 +32,7 @@ class Pygame:
         pygame.init()
         pygame.font.init()
         self.font = pygame.font.SysFont('Comic Sans MS', 30)
+        self.font20 = pygame.font.SysFont('Comic Sans MS', 20)
         self.game_state = GameState.GameStart
         self.game_data = {}
         self.game_data_queue = game_data_queue
@@ -705,6 +703,12 @@ class Pygame:
             pygame.draw.circle(self.screen, characterParams[1],
                                characterParams[0], CIRCLE_R, 0)
 
+        # print (self.game_data["claims"])
+        if "claims" in self.game_data:
+            latest_claim = self.select_latest_claim(self.game_data["claims"])
+            # print(latest_claim)
+            self.report_claim(latest_claim)
+
     def claimScreen(self, isAccuse):
         self.screen.blit(self.claim_img, self.claim_screen)
 
@@ -750,6 +754,58 @@ class Pygame:
         else:
             title = self.font.render("Make your Suggestion!", True, BLACK)
             self.screen.blit(title, (SCREEN_WIDTH / 2, 0))
+
+    def report_claim(self, claim):
+        if claim is None:
+            return
+
+        print("REPORT CLAIM")
+
+        is_suggestion = "suggestion" in claim
+        type = "suggestion" if is_suggestion else "claim"
+        inner_data = claim[type]
+        player = inner_data["player"]
+        character = inner_data["character"]
+        room = inner_data["room"]
+        weapon = inner_data["weapon"]
+        was_disproven = "disprover" in claim and claim["disprover"] is not None
+        disprover = claim["disprover"]
+        disproving_subject = claim["disproving_subject"]
+
+        string2 = "foo"
+        if is_suggestion:
+            string = f"{player} made suggestion: {character} in the {room} with the {weapon}"
+            if was_disproven:
+                string2 += f"{disprover} disproved with {disproving_subject}"
+            else:
+                string2 += "No one could disprove this claim"
+        else:
+            string = f"{player} made accusation: {character} in the {room} with the {weapon}"
+            if was_disproven:
+                string2 += f"{player} was incorrect and loses."
+            else:
+                string2 += f"{player} was correct and wins!"
+
+        print(string)
+
+        title = self.font20.render(string, True, BLACK)
+        self.screen.blit(title, (300, 625))
+        title = self.font20.render(string2, True, BLACK)
+        self.screen.blit(title, (500, 660))
+
+    def select_latest_claim(self, claims):
+        latest_claim = None
+        max_timestamp = float('-inf')
+
+        for claim in claims:
+            for key in ['suggestion', 'accusation']:
+                if key in claim:
+                    timestamp = claim[key].get('timestamp', float('-inf'))
+                    if timestamp > max_timestamp:
+                        max_timestamp = timestamp
+                        latest_claim = claim
+
+        return latest_claim
 
     def winScreen(self):
         winner = self.game_data["winner"]
@@ -883,6 +939,7 @@ class Pygame:
                                 self.check_if_in_room((x, y))
                 else:
                     self.game_state = GameState.PlayerWin
+
 
                 # pass
             elif self.game_state == GameState.PlayerTurn:
