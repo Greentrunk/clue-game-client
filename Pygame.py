@@ -15,7 +15,7 @@ from Tools.demo.spreadsheet import xml2align
 from GameState import GameState
 
 from Gameboard import spawnLocations, charColors, customGrid, xScale, yScale, rooms, possible_moves, cardPositions, \
-    cardPos, roomLocations
+    cardPos, roomLocations, room_map
 
 from Gameboard import Grid
 
@@ -355,7 +355,6 @@ class Pygame:
                     self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
 
-
         self.up_left_button.at_unclick = up_left_button_unclick
 
         self.down_left_button = tp.Button("Press to move to Conservatory")
@@ -378,7 +377,6 @@ class Pygame:
                     print("MOVING TO GAME BOARD")
                     self.check_player_location((x, y))
                     self.game_state = GameState.GameBoard
-
 
         self.down_left_button.at_unclick = down_left_button_unclick
 
@@ -407,19 +405,28 @@ class Pygame:
         self.claim_confirm_button = tp.Button("Press to claim")
         self.claim_confirm_button.center_on(self.screen)
 
-        self.claim_character = tp.TextInput("", placeholder="Claim Character")
-        self.claim_weapon = tp.TextInput("", placeholder="Claim Weapon")
-        self.claim_room = tp.TextInput("", placeholder="Claim Room")
+        all_characters = (
+            "Miss Scarlett", "Colonel Mustard", "Professor Plum", "Mrs. Peacock", "Reverend Green", "Mrs. White")
+        all_weapons = ("Candlestick", "Dagger", "Lead Pipe", "Revolver", "Rope", "Wrench")
+        all_rooms = (
+            "Study", "Hall", "Lounge", "Library", "Billiard Room", "Dining Room", "Conservatory", "Ballroom", "Kitchen")
+
+        # self.claim_character = tp.TextInput("", placeholder="Claim Character")
+        self.claim_character = tp.DropDownListButton(all_characters, title="Characters")
+        # self.claim_weapon = tp.TextInput("", placeholder="Claim Weapon")
+        self.claim_weapon = tp.DropDownListButton(all_weapons, title="Weapons")
+        # self.claim_room = tp.TextInput("", placeholder="Claim Room")
+        self.claim_room = tp.DropDownListButton(all_rooms, title="Rooms")
 
         def claim_confirm_button_unclick():
             print("claim button clicked!")
 
-            character = self.claim_character.value
-            weapon = self.claim_weapon.value
-            room = self.claim_room.value
+            character = self.claim_character.get_value()
+            weapon = self.claim_weapon.get_value()
+            room = self.claim_room.get_value()
 
             # need to check if claim is valid
-            if self.isAccuse == True:
+            if self.isAccuse:
                 message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": True,
                            "character": character, "weapon": weapon,
                            "room": room}
@@ -428,11 +435,15 @@ class Pygame:
                 # message = {"message_type": "move_character", "x_coord": x, "y_coord": y,
                 #            "character": }
                 # self.ws.send(json.dumps(message))
+                player = next(player for player in self.game_data["players"] if player["name"] == self.player_name)
+                x = (int(player["position"]["x"])) % 7
+                y = (int(player["position"]["y"])) % 7
+                room_string = room_map[(x, y)]
 
-                #send the suggestion to the server
+                # send the suggestion to the server
                 message = {"message_type": "make_claim", "player_name": self.player_name, "is_accused": False,
                            "character": character, "weapon": weapon,
-                           "room": room}
+                           "room": room_string}
             self.ws.send(json.dumps(message))
             self.ui_current_updater = self.ui_spare_ui.get_updater()
             self.suggest_button.set_invisible(True)
@@ -449,7 +460,7 @@ class Pygame:
         self.player_claim.append(self.claim_confirm_button)
 
         self.ui_player_claim = tp.Group(self.player_claim)
-        self.ui_player_claim.set_center(175, SCREEN_HEIGHT / 2)
+        # self.ui_player_claim.set_center(175, SCREEN_HEIGHT / 2)
 
         self.ui_current_updater = self.ui_player_claim.get_updater()
 
@@ -493,7 +504,7 @@ class Pygame:
         player_count_temp = self.font.render(player_count, True, WHITE)
         self.screen.blit(player_count_temp, ((SCREEN_WIDTH / 2 + 300), 575))
 
-        if self.is_ready_button_shown == False:
+        if not self.is_ready_button_shown:
             self.is_ready_button_shown = True
 
     def setupGameboard(self):
@@ -753,7 +764,6 @@ class Pygame:
         title = self.font.render("You made an incorrect accusation. You are now inactive.", True, BLACK)
         self.screen.blit(title, (675, 400))
 
-
     def check_player_location(self, coords):
         # check if player is in room and update turn possibilites
         self.claim_character.set_invisible(True)
@@ -796,8 +806,6 @@ class Pygame:
                 y = player["position"]["y"]
                 if (x == 1 or x == 3 or x == 5) and (y == 1 or y == 3 or y == 5):
                     self.suggest_button.set_invisible(False)
-
-
 
     def set_game_data_queue(self, queue):
         self.game_data_queue = queue
@@ -859,7 +867,7 @@ class Pygame:
 
                 for player in self.game_data["players"]:
                     if player["name"] == self.player_name:
-                        if player["is_active"] == False:
+                        if not player["is_active"]:
                             self.playerLoss()
                 if self.game_data["winner"] is None:
                     # Check who's turn
@@ -872,7 +880,7 @@ class Pygame:
                             if player["name"] == self.player_name:
                                 x = int(player["position"]["x"])
                                 y = (int(player["position"]["y"]) - 1) % 7
-                                self.check_if_in_room((x,y))
+                                self.check_if_in_room((x, y))
                 else:
                     self.game_state = GameState.PlayerWin
 
@@ -882,6 +890,10 @@ class Pygame:
 
             elif self.game_state == GameState.Claim:
                 self.claimScreen(self.isAccuse)
+                if not self.isAccuse:
+                    self.claim_room.set_invisible(True)
+                else:
+                    self.claim_room.set_invisible(False)
 
 
             elif self.game_state == GameState.PlayerWin:
