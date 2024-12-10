@@ -42,7 +42,7 @@ class Grid:
                              (col * self.square_size, self.rows * self.square_size))
 
 
-class cardPositions (Enum):
+class cardPositions(Enum):
     x0 = 1030
     x1 = 1140
 
@@ -50,14 +50,16 @@ class cardPositions (Enum):
     y1 = 288
     y2 = 468
 
-cardPos = [(cardPositions.x1.value,cardPositions.y0.value),
-           (cardPositions.x1.value,cardPositions.y1.value),
-           (cardPositions.x1.value,cardPositions.y2.value),
-           (cardPositions.x0.value,cardPositions.y0.value),
-           (cardPositions.x0.value,cardPositions.y1.value),
-           (cardPositions.x0.value,cardPositions.y2.value)]
 
-class customGrid (Enum):
+cardPos = [(cardPositions.x1.value, cardPositions.y0.value),
+           (cardPositions.x1.value, cardPositions.y1.value),
+           (cardPositions.x1.value, cardPositions.y2.value),
+           (cardPositions.x0.value, cardPositions.y0.value),
+           (cardPositions.x0.value, cardPositions.y1.value),
+           (cardPositions.x0.value, cardPositions.y2.value)]
+
+
+class customGrid(Enum):
     x0 = 420
     x1 = 515
     x2 = 600
@@ -131,7 +133,10 @@ rooms = [roomLocations.STUDY, roomLocations.HALL, roomLocations.LOUNGE, roomLoca
          roomLocations.BILLIARD, roomLocations.DINING, roomLocations.CONSERVATORY, roomLocations.BALLROOM,
          roomLocations.KITCHEN]
 
-
+room_map = {
+    (1, 1): "Study", (3, 1): "Hall", (5, 1): "Lounge", (1, 3): "Library", (3, 3): "Billiard Room", (5, 3): "Dining Room",
+    (1, 5): "Conservatory", (3, 5): "Ballroom", (5, 5): "Kitchen"
+}
 
 possible_moves = [(customGrid.x1.value, customGrid.y1.value), (customGrid.x2.value, customGrid.y1.value),
                   (customGrid.x3.value, customGrid.y1.value), (customGrid.x4.value, customGrid.y1.value),
